@@ -1,0 +1,620 @@
+{{ header }}{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container-fluid">
+        {% if success %}
+        <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }} <button type="button" class="close" data-dismiss="alert">&times;</button></div>
+        {% endif %}
+        {% if error_warning %}
+        <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }} <button type="button" class="close" data-dismiss="alert">&times;</button></div>
+        {% endif %}
+
+        <ul class="nav nav-tabs" id="cfgTabs">
+            <li {% if tab == 'orders' %}class="active"{% endif %}><a href="#tab-orders" data-toggle="tab" data-tab="orders"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>{{ tab_orders }} <span class="badge">{{ total_orders }}</span></a></li>
+            <li {% if tab == 'catalog' %}class="active"{% endif %}><a href="#tab-catalog" data-toggle="tab" data-tab="catalog"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>{{ tab_catalog }}</a></li>
+            <li {% if tab == 'categories' %}class="active"{% endif %}><a href="#tab-categories" data-toggle="tab" data-tab="categories"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px"><path d="M4 6h16M4 12h16M4 18h7"/></svg>{{ tab_categories }}</a></li>
+            <li {% if tab == 'components' %}class="active"{% endif %}><a href="#tab-components" data-toggle="tab" data-tab="components"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/></svg>{{ tab_components }}</a></li>
+            <li {% if tab == 'rules' %}class="active"{% endif %}><a href="#tab-rules" data-toggle="tab" data-tab="rules"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>{{ tab_rules }}</a></li>
+            <li {% if tab == 'settings' %}class="active"{% endif %}><a href="#tab-settings" data-toggle="tab" data-tab="settings"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>{{ tab_settings }}</a></li>
+            <li {% if tab == 'help' %}class="active"{% endif %}><a href="#tab-help" data-toggle="tab" data-tab="help"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg>{{ tab_help }}</a></li>
+        </ul>
+
+        <div class="tab-content" style="padding-top:15px">
+
+            <!-- ORDERS -->
+            <div class="tab-pane {% if tab == 'orders' %}active{% endif %}" id="tab-orders">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{ tab_orders }}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>{{ text_customer }}</th>
+                                        <th>{{ text_phone }}</th>
+                                        <th>{{ text_components }}</th>
+                                        <th>{{ text_total }}</th>
+                                        <th>{{ text_status }}</th>
+                                        <th>{{ text_date }}</th>
+                                        <th style="width:40px"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                    <tr>
+                                        <td>{{ order.order_id }}</td>
+                                        <td>{{ order.customer_name|e }}<br><small class="text-muted">{{ order.customer_email|e }}</small></td>
+                                        <td>{{ order.customer_phone|e }}</td>
+                                        <td>
+                                            {% for comp in order.component_list %}
+                                            <small><strong>{{ comp.category }}:</strong> {{ comp.name|e }}</small><br>
+                                            {% endfor %}
+                                            {% if order.comment %}<small class="text-muted"><em>{{ order.comment|e }}</em></small>{% endif %}
+                                        </td>
+                                        <td><strong>{{ order.total_price }} &#8382;</strong></td>
+                                        <td>
+                                            <select class="form-control input-sm cfg-status-{{ order.status }}" onchange="changeStatus(this, '{{ order.status_url|raw }}')" style="width:130px">
+                                                <option value="new" style="color:#e74c3c" {% if order.status == 'new' %}selected{% endif %}>{{ text_status_new_label }}</option>
+                                                <option value="processing" style="color:#f39c12" {% if order.status == 'processing' %}selected{% endif %}>{{ text_status_processing_label }}</option>
+                                                <option value="completed" style="color:#27ae60" {% if order.status == 'completed' %}selected{% endif %}>{{ text_status_completed_label }}</option>
+                                                <option value="cancelled" style="color:#999" {% if order.status == 'cancelled' %}selected{% endif %}>{{ text_status_cancelled_label }}</option>
+                                            </select>
+                                        </td>
+                                        <td><small>{{ order.date_added }}</small></td>
+                                        <td style="white-space:nowrap">
+                                            <button class="btn btn-info btn-xs" onclick="viewOrder({{ order.order_id }})"><i class="fa fa-eye"></i></button>
+                                            <a href="{{ order.pdf_url }}" target="_blank" class="btn btn-default btn-xs"><i class="fa fa-file-pdf-o"></i></a>
+                                            <a href="{{ order.delete_url }}" class="btn btn-danger btn-xs" onclick="return cfgConfirm(this)"><i class="fa fa-trash"></i></a>
+                                        </td>
+
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="8" class="text-center">{{ text_no_orders }}</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CATALOG -->
+            <div class="tab-pane {% if tab == 'catalog' %}active{% endif %}" id="tab-catalog">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{ text_catalog_products }}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row" style="margin-bottom:15px">
+                            {% for cat in categories %}
+                            <div class="col-xs-6 col-sm-4 col-md-3" style="margin-bottom:8px">
+                                <a href="{{ url_base|raw }}&tab=catalog&catalog_category={{ cat.category_id }}" class="btn btn-block {% if catalog_category == cat.category_id %}btn-primary{% else %}btn-default{% endif %}" style="text-align:left;overflow:hidden;text-overflow:ellipsis;padding-left:10px">
+                                    <img src="{{ catalog_view_path }}javascript/configurator/icons/{{ cat.icon }}" style="width:20px;height:20px;margin-right:5px;vertical-align:middle" onerror="this.style.display='none'">
+                                    {{ cat.name_ka }} <span class="badge">{{ catalog_counts[cat.category_id]|default(0) }}</span>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if catalog_products %}
+                        <table class="table table-bordered table-condensed table-hover">
+                            <thead><tr><th>ID</th><th>{{ text_col_name }}</th><th>{{ text_col_price }}</th><th>{{ text_col_qty }}</th><th>{{ text_col_status }}</th></tr></thead>
+                            <tbody>
+                                {% for p in catalog_products %}
+                                <tr>
+                                    <td>{{ p.product_id }}</td>
+                                    <td>{{ p.name|e }}</td>
+                                    <td>{{ p.price }} &#8382;</td>
+                                    <td>{{ p.quantity }}</td>
+                                    <td>{% if p.status %}<span class="label label-success">On</span>{% else %}<span class="label label-danger">Off</span>{% endif %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="row">
+                            <div class="col-sm-6"><p class="text-muted">{{ text_total_page|format(catalog_total, catalog_page, catalog_pages) }}</p></div>
+                            <div class="col-sm-6 text-right">
+                                {% if catalog_pages > 1 %}
+                                <ul class="pagination pagination-sm" style="margin:0">
+                                    {% for p in 1..catalog_pages %}
+                                    <li {% if p == catalog_page %}class="active"{% endif %}><a href="{{ url_base|raw }}&tab=catalog&catalog_category={{ catalog_category }}&cpage={{ p }}">{{ p }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% elseif catalog_category %}
+                        <p class="text-center text-muted" style="padding:20px">{{ text_no_catalog_products }}</p>
+                        {% else %}
+                        <p class="text-center text-muted" style="padding:20px">{{ text_select_category }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- CATEGORIES -->
+            <div class="tab-pane {% if tab == 'categories' %}active{% endif %}" id="tab-categories">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{ text_categories_title }}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>English</th>
+                                    <th>Georgian</th>
+                                    <th>Russian</th>
+                                    <th>Section</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cat in categories %}
+                                <tr>
+                                    <form action="{{ url_update_category }}" method="post">
+                                        <input type="hidden" name="category_id" value="{{ cat.category_id }}">
+                                        <td>{{ cat.category_id }}</td>
+                                        <td><input type="text" name="name" value="{{ cat.name|e }}" class="form-control input-sm"></td>
+                                        <td><input type="text" name="name_ka" value="{{ cat.name_ka|e }}" class="form-control input-sm"></td>
+                                        <td><input type="text" name="name_ru" value="{{ cat.name_ru|e }}" class="form-control input-sm"></td>
+                                        <td><span class="label label-{% if cat.section == 'system' %}primary{% else %}info{% endif %}">{{ cat.section }}</span></td>
+                                        <td><button type="submit" class="btn btn-success btn-xs"><i class="fa fa-save"></i></button></td>
+                                    </form>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MANUAL COMPONENTS -->
+            <div class="tab-pane {% if tab == 'components' %}active{% endif %}" id="tab-components">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="pull-right">
+                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addComponentModal"><i class="fa fa-plus"></i> {{ text_btn_add }}</button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="bulkDelete('comp')"><i class="fa fa-trash"></i> {{ text_btn_delete }}</button>
+                            </div>
+                            <h3 class="panel-title">{{ tab_components }}</h3>
+                        </div>
+                        <div class="panel-body">
+                            <table class="table table-bordered table-hover">
+                                <thead><tr><th style="width:1px"><input type="checkbox" onclick="$('.chk-comp').prop('checked',this.checked)"></th><th>ID</th><th>{{ text_modal_category }}</th><th>{{ text_col_name }}</th><th>{{ text_col_price }}</th><th>{{ text_col_status }}</th><th style="width:40px"></th></tr></thead>
+                                <tbody>
+                                    {% for comp in components %}
+                                    <tr>
+                                        <td><input type="checkbox" class="chk-comp" value="{{ comp.delete_url }}"></td>
+                                        <td>{{ comp.component_id }}</td>
+                                        <td>{{ comp.category_name }}</td>
+                                        <td>{{ comp.name|e }}</td>
+                                        <td>{{ comp.price }} &#8382;</td>
+                                        <td>{% if comp.status %}<span class="label label-success">On</span>{% else %}<span class="label label-danger">Off</span>{% endif %}</td>
+                                        <td><a href="{{ comp.delete_url }}" class="btn btn-danger btn-xs" onclick="return cfgConfirm(this)"><i class="fa fa-trash"></i></a></td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="6" class="text-center">{{ text_no_manual_components }}</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+            </div>
+
+            <!-- RULES -->
+            <div class="tab-pane {% if tab == 'rules' %}active{% endif %}" id="tab-rules">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="pull-right">
+                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addRuleModal"><i class="fa fa-plus"></i> {{ text_btn_add_rule }}</button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="bulkDelete('rule')"><i class="fa fa-trash"></i> {{ text_btn_delete }}</button>
+                            </div>
+                            <h3 class="panel-title">{{ tab_rules }}</h3>
+                            <p class="text-muted" style="margin:5px 0 0"><small>{{ text_rules_hint }}</small></p>
+                        </div>
+                        <div class="panel-body">
+                            <table class="table table-bordered">
+                                <thead><tr><th style="width:1px"><input type="checkbox" onclick="$('.chk-rule').prop('checked',this.checked)"></th><th>{{ text_col_type }}</th><th>{{ text_modal_component1 }}</th><th>{{ text_modal_component2 }}</th><th>{{ text_modal_compatible }}</th><th style="width:40px"></th></tr></thead>
+                                <tbody>
+                                    {% for rule in rules %}
+                                    <tr>
+                                        <td><input type="checkbox" class="chk-rule" value="{{ rule.delete_url }}"></td>
+                                        <td><span class="label label-default">{{ rule.rule_type }}</span></td>
+                                        <td>{{ rule.comp1_name|e }}</td>
+                                        <td>{{ rule.comp2_name|e }}</td>
+                                        <td>{% if rule.compatible %}<span class="label label-success">Yes</span>{% else %}<span class="label label-danger">No</span>{% endif %}</td>
+                                        <td><a href="{{ rule.delete_url }}" class="btn btn-danger btn-xs" onclick="return cfgConfirm(this)"><i class="fa fa-trash"></i></a></td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="5" class="text-center">{{ text_no_manual_rules }}</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+            </div>
+
+            <!-- SETTINGS -->
+            <div class="tab-pane {% if tab == 'settings' %}active{% endif %}" id="tab-settings">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3 class="panel-title">{{ text_settings_title }}</h3></div>
+                    <div class="panel-body">
+                        <form method="post" action="{{ url_save_settings|raw }}">
+                            <h4>{{ text_settings_buttons }}</h4>
+                            <div class="form-group">
+                                <div class="checkbox">
+                                    <label><input type="checkbox" name="cfg_show_save" value="1" {% if cfg_show_save %}checked{% endif %}> {{ text_cfg_show_save }}</label>
+                                </div>
+                                <div class="checkbox">
+                                    <label><input type="checkbox" name="cfg_show_load" value="1" {% if cfg_show_load %}checked{% endif %}> {{ text_cfg_show_load }}</label>
+                                </div>
+                            </div>
+                            <hr>
+                            <h4>{{ text_settings_qty }}</h4>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>{{ text_cfg_qty_ram }}</label>
+                                        <input type="number" name="cfg_qty_ram" value="{{ cfg_qty_ram }}" min="1" max="8" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>SSD</label>
+                                        <input type="number" name="cfg_qty_ssd" value="{{ cfg_qty_ssd }}" min="1" max="8" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>HDD</label>
+                                        <input type="number" name="cfg_qty_hdd" value="{{ cfg_qty_hdd }}" min="1" max="8" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>{{ text_cfg_qty_casefan }}</label>
+                                        <input type="number" name="cfg_qty_casefan" value="{{ cfg_qty_casefan }}" min="1" max="12" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>{{ text_cfg_qty_monitor }}</label>
+                                        <input type="number" name="cfg_qty_monitor" value="{{ cfg_qty_monitor }}" min="1" max="6" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> {{ button_save }}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HELP -->
+            <div class="tab-pane {% if tab == 'help' %}active{% endif %}" id="tab-help">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3 class="panel-title">{{ text_help_how }}</h3></div>
+                    <div class="panel-body">
+                        <h4>{{ text_help_products_title }}</h4>
+                        <p>{{ text_help_products_body }}</p>
+                        <h4>{{ text_help_compat_title }}</h4>
+                        <p>{{ text_help_compat_body|raw }}</p>
+                        <h4>{{ text_help_manual_title }}</h4>
+                        <p>{{ text_help_manual_body }}</p>
+                        <h4>{{ text_help_orders_title }}</h4>
+                        <p>{{ text_help_orders_body }}</p>
+                        <h4>{{ text_help_link_title }}</h4>
+                        <p><code>index.php?route=information/configurator</code></p>
+                        <hr>
+                        <h4>{{ text_help_settings_title }}</h4>
+                        <p>{{ text_help_settings_body }}</p>
+                        <ul>
+                            <li>{{ text_help_settings_li1|raw }}</li>
+                            <li>{{ text_help_settings_li2|raw }}</li>
+                            <li>{{ text_help_settings_li3|raw }}</li>
+                            <li>{{ text_help_settings_li4|raw }}</li>
+                            <li>{{ text_help_settings_li5|raw }}</li>
+                            <li>{{ text_help_settings_li6|raw }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Component Modal -->
+<div class="modal fade" id="addComponentModal">
+    <div class="modal-dialog">
+        <form action="{{ url_add_component }}" method="post">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{{ text_modal_add_component }}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>{{ text_modal_category }}</label>
+                        <select name="category_id" class="form-control" required>
+                            {% for cat in categories %}
+                            <option value="{{ cat.category_id }}">{{ cat.name_ka }} ({{ cat.name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ text_modal_name }}</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ text_modal_price }}</label>
+                        <input type="number" name="price" class="form-control" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ text_modal_status }}</label>
+                        <select name="status" class="form-control">
+                            <option value="1">Enabled</option>
+                            <option value="0">Disabled</option>
+                        </select>
+                    </div>
+                    <hr>
+                    <h5>{{ text_modal_attributes }}</h5>
+                    <div id="attrContainer">
+                        <div class="row attr-row" style="margin-bottom:5px">
+                            <div class="col-xs-5">
+                                <select name="attributes[0][name]" class="form-control input-sm">
+                                    <option value="">--</option>
+                                    <option value="socket">Socket</option>
+                                    <option value="ram_type">RAM Type</option>
+                                    <option value="form_factor">Form Factor</option>
+                                    <option value="tdp">TDP (W)</option>
+                                    <option value="wattage">Wattage (W)</option>
+                                </select>
+                            </div>
+                            <div class="col-xs-5"><input type="text" name="attributes[0][value]" class="form-control input-sm" placeholder="Value"></div>
+                            <div class="col-xs-2"><button type="button" class="btn btn-danger btn-sm" onclick="$(this).closest('.attr-row').remove()">X</button></div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-default btn-xs" id="btnAddAttr">+ {{ text_modal_attributes }}</button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{{ text_modal_close }}</button>
+                    <button type="submit" class="btn btn-primary" onclick="this.disabled=true;this.textContent='{{ text_modal_loading }}';this.form.submit()">{{ text_modal_save }}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Rule Modal -->
+<div class="modal fade" id="addRuleModal">
+    <div class="modal-dialog">
+        <form action="{{ url_add_rule }}" method="post">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{{ text_modal_add_rule }}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>{{ text_modal_rule_type }}</label>
+                        <select name="rule_type" class="form-control">
+                            <option value="socket">Socket</option>
+                            <option value="ram_type">RAM Type</option>
+                            <option value="form_factor">Form Factor</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ text_modal_component1 }}</label>
+                        <input type="number" name="component_id_1" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ text_modal_component2 }}</label>
+                        <input type="number" name="component_id_2" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ text_modal_compatible }}</label>
+                        <select name="compatible" class="form-control">
+                            <option value="0">{{ text_modal_incompatible }}</option>
+                            <option value="1">{{ text_modal_compatible_yes }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{{ text_modal_close }}</button>
+                    <button type="submit" class="btn btn-primary" onclick="this.disabled=true;this.textContent='{{ text_modal_loading }}';this.form.submit()">{{ text_modal_save }}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- View Order Modal -->
+<div class="modal fade" id="viewOrderModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">{{ text_order_details }}</h4>
+            </div>
+            <div class="modal-body" id="viewOrderBody"></div>
+            <div class="modal-footer">
+                <a href="#" id="viewOrderPdf" target="_blank" class="btn btn-default"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var CfgLang = {{ js_strings|raw }};
+var ordersData = {
+    {% for order in orders %}
+    {{ order.order_id }}: {
+        id: {{ order.order_id }},
+        name: '{{ order.customer_name|e('js') }}',
+        phone: '{{ order.customer_phone|e('js') }}',
+        email: '{{ order.customer_email|e('js') }}',
+        comment: '{{ order.comment|e('js') }}',
+        total: '{{ order.total_price }}',
+        status: '{{ order.status }}',
+        date: '{{ order.date_added }}',
+        pdf: '{{ order.pdf_url|raw }}',
+        components: [
+            {% for comp in order.component_list %}
+            {category: '{{ comp.category|e('js') }}', name: '{{ comp.name|e('js') }}'}{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+function viewOrder(id) {
+    var o = ordersData[id];
+    if (!o) return;
+
+    var html = '<div class="row">' +
+        '<div class="col-sm-6">' +
+        '<table class="table table-condensed">' +
+        '<tr><td><strong>' + CfgLang.order + ' #</strong></td><td>' + o.id + '</td></tr>' +
+        '<tr><td><strong>' + CfgLang.name + '</strong></td><td>' + o.name + '</td></tr>' +
+        '<tr><td><strong>' + CfgLang.phone + '</strong></td><td>' + o.phone + '</td></tr>' +
+        '<tr><td><strong>' + CfgLang.email + '</strong></td><td>' + (o.email || '-') + '</td></tr>' +
+        '<tr><td><strong>' + CfgLang.date + '</strong></td><td>' + o.date + '</td></tr>' +
+        '<tr><td><strong>' + CfgLang.status + '</strong></td><td>' + o.status + '</td></tr>' +
+        '</table></div>' +
+        '<div class="col-sm-6">' +
+        '<h5 style="color:#e74c3c;font-weight:700">' + CfgLang.total + ': ' + o.total + ' &#8382;</h5>';
+
+    if (o.comment) {
+        html += '<div class="alert alert-warning" style="font-size:13px"><i class="fa fa-comment"></i> ' + o.comment + '</div>';
+    }
+
+    html += '</div></div><hr><h5>' + CfgLang.components + '</h5>' +
+        '<table class="table table-bordered table-condensed"><thead><tr><th>#</th><th>' + CfgLang.category + '</th><th>' + CfgLang.components + '</th></tr></thead><tbody>';
+
+    for (var i = 0; i < o.components.length; i++) {
+        html += '<tr><td>' + (i+1) + '</td><td>' + o.components[i].category + '</td><td>' + o.components[i].name + '</td></tr>';
+    }
+
+    html += '</tbody></table>';
+
+    $('#viewOrderBody').html(html);
+    $('#viewOrderPdf').attr('href', o.pdf);
+    $('#viewOrderModal').modal('show');
+}
+</script>
+
+<style>
+.cfg-status-new { color: #e74c3c; font-weight: bold; border-color: #e74c3c; }
+.cfg-status-processing { color: #f39c12; font-weight: bold; border-color: #f39c12; }
+.cfg-status-completed { color: #27ae60; font-weight: bold; border-color: #27ae60; }
+.cfg-status-cancelled { color: #999; font-weight: bold; border-color: #999; }
+
+.cfg-confirm-overlay {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.5); z-index: 99999;
+    display: flex; align-items: center; justify-content: center;
+}
+.cfg-confirm-box {
+    background: #fff; border-radius: 12px; padding: 30px;
+    max-width: 400px; width: 90%; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.cfg-confirm-icon { font-size: 48px; color: #e74c3c; margin-bottom: 15px; }
+.cfg-confirm-msg { font-size: 15px; color: #333; margin-bottom: 25px; }
+.cfg-confirm-btns { display: flex; gap: 10px; justify-content: center; }
+.cfg-confirm-btns .btn { min-width: 100px; padding: 10px 25px; border-radius: 8px; font-weight: 600; }
+</style>
+
+<script>
+$('#cfgTabs a').on('shown.bs.tab', function(e) {
+    var tab = $(e.target).data('tab');
+    var url = new URL(window.location.href);
+    url.searchParams.set('tab', tab);
+    history.replaceState(null, '', url.toString());
+});
+
+var attrIdx = 1;
+$('#btnAddAttr').on('click', function() {
+    var html = '<div class="row attr-row" style="margin-bottom:5px">' +
+        '<div class="col-xs-5"><select name="attributes['+attrIdx+'][name]" class="form-control input-sm">' +
+        '<option value="">--</option><option value="socket">Socket</option><option value="ram_type">RAM Type</option>' +
+        '<option value="form_factor">Form Factor</option><option value="tdp">TDP (W)</option><option value="wattage">Wattage (W)</option>' +
+        '</select></div><div class="col-xs-5"><input type="text" name="attributes['+attrIdx+'][value]" class="form-control input-sm" placeholder="Value">' +
+        '</div><div class="col-xs-2"><button type="button" class="btn btn-danger btn-sm" onclick="$(this).closest(\'.attr-row\').remove()">X</button></div></div>';
+    $('#attrContainer').append(html);
+    attrIdx++;
+});
+
+function changeStatus(sel, url) {
+    var status = sel.value;
+    sel.className = 'form-control input-sm cfg-status-' + status;
+    sel.disabled = true;
+    $.get(url + '&status=' + status, function() {
+        sel.disabled = false;
+    });
+}
+
+function ajaxDelete(url, $row) {
+    $row.css('opacity', '0.4');
+    $row.find('.btn-danger').html('<i class="fa fa-spinner fa-spin"></i>');
+    $.get(url, function() {
+        $row.fadeOut(300, function() { $(this).remove(); });
+    });
+}
+
+function cfgConfirm(el) {
+    var url = el.href;
+    var $row = $(el).closest('tr');
+    var $o = $('<div class="cfg-confirm-overlay"><div class="cfg-confirm-box">' +
+        '<div class="cfg-confirm-icon"><i class="fa fa-exclamation-triangle"></i></div>' +
+        '<div class="cfg-confirm-msg">' + CfgLang.deleteN + '</div>' +
+        '<div class="cfg-confirm-btns">' +
+        '<button class="btn btn-default">' + CfgLang.cancel + '</button>' +
+        '<button class="btn btn-danger">' + CfgLang.delete + '</button>' +
+        '</div></div></div>');
+    $('body').append($o);
+    $o.find('.btn-danger').on('click', function() { $o.remove(); ajaxDelete(url, $row); });
+    $o.find('.btn-default').on('click', function() { $o.remove(); });
+    $o.on('click', function(e) { if (e.target === $o[0]) $o.remove(); });
+    return false;
+}
+
+function bulkDelete(type) {
+    var $checked = $('.chk-' + type + ':checked');
+    if (!$checked.length) return;
+    var $o = $('<div class="cfg-confirm-overlay"><div class="cfg-confirm-box">' +
+        '<div class="cfg-confirm-icon"><i class="fa fa-exclamation-triangle"></i></div>' +
+        '<div class="cfg-confirm-msg">' + CfgLang.delete + ' ' + $checked.length + '?</div>' +
+        '<div class="cfg-confirm-btns">' +
+        '<button class="btn btn-default">' + CfgLang.cancel + '</button>' +
+        '<button class="btn btn-danger">' + CfgLang.delete + '</button>' +
+        '</div></div></div>');
+    $('body').append($o);
+    $o.find('.btn-danger').on('click', function() {
+        $o.remove();
+        $checked.each(function() {
+            var $row = $(this).closest('tr');
+            $row.css('opacity', '0.4');
+            $row.find('.btn-danger').html('<i class="fa fa-spinner fa-spin"></i>');
+            $.get($(this).val(), function() { $row.fadeOut(300, function() { $(this).remove(); }); });
+        });
+    });
+    $o.find('.btn-default').on('click', function() { $o.remove(); });
+    $o.on('click', function(e) { if (e.target === $o[0]) $o.remove(); });
+}
+</script>
+{{ footer }}

@@ -1,0 +1,628 @@
+/* ================================================
+   PC CONFIGURATOR — GCOMP.GE (Chameleon Theme)
+   ================================================ */
+
+.cfg-page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 20px 0;
+}
+
+/* Sections */
+.cfg-section {
+    margin-bottom: 25px;
+}
+
+.cfg-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #555;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e74c3c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Component Slots */
+.cfg-slot {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+.cfg-slot:hover {
+    border-color: #ccc;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.cfg-slot.selected {
+    border-color: #e74c3c;
+    background: #fef9f9;
+}
+
+.cfg-slot-icon {
+    width: 48px;
+    height: 48px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.cfg-slot-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.cfg-slot-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cfg-slot-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    display: block;
+}
+
+.cfg-required {
+    color: #e74c3c;
+    font-weight: bold;
+    margin-left: 3px;
+}
+
+.cfg-selected-name {
+    font-size: 12px;
+    color: #888;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cfg-slot-price {
+    font-size: 14px;
+    font-weight: 700;
+    color: #e74c3c;
+    margin-right: 12px;
+    white-space: nowrap;
+}
+
+.cfg-slot-actions {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.btn-cfg-add {
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-cfg-add:hover, .btn-cfg-add:focus {
+    background: #c0392b;
+    color: #fff;
+}
+
+/* Quantity */
+.cfg-slot-qty {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.cfg-slot-qty .btn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    line-height: 26px;
+    text-align: center;
+    border-radius: 4px;
+}
+
+.cfg-qty-value {
+    font-weight: 700;
+    font-size: 14px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.btn-cfg-remove {
+    background: #f0f0f0;
+    color: #999;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-cfg-remove:hover {
+    background: #e0e0e0;
+    color: #666;
+}
+
+/* Sidebar */
+.cfg-sidebar {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 20px;
+    position: sticky;
+    top: 20px;
+}
+
+.cfg-sidebar-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #e74c3c;
+    text-align: center;
+    margin: 0 0 15px 0;
+    text-transform: uppercase;
+}
+
+/* Price Block */
+.cfg-price-block {
+    text-align: center;
+    padding: 15px 0;
+    margin-bottom: 15px;
+}
+
+.cfg-currency {
+    font-size: 24px;
+    color: #e74c3c;
+    font-weight: 300;
+}
+
+.cfg-total-amount {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+}
+
+/* Compatibility */
+#cfg-compat {
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 13px;
+}
+
+#cfg-compat.compat-ok {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+#cfg-compat.compat-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+#cfg-compat.compat-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+/* Action Buttons */
+.cfg-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.btn-cfg-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fff;
+    color: #555;
+}
+
+.btn-cfg-action:hover {
+    background: #f8f8f8;
+    border-color: #ccc;
+}
+
+.btn-cfg-action.btn-order-main {
+    background: #e74c3c;
+    color: #fff;
+    border-color: #e74c3c;
+}
+
+.btn-cfg-action.btn-order-main:hover {
+    background: #c0392b;
+}
+
+/* Tips */
+.cfg-tips {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.cfg-tip {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.cfg-tip i {
+    color: #27ae60;
+    margin-right: 5px;
+}
+
+/* Component List Modal */
+.cfg-search {
+    margin-bottom: 15px;
+}
+
+.cfg-component-list {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.cfg-comp-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.cfg-comp-item:hover {
+    border-color: #e74c3c;
+    background: #fef9f9;
+}
+
+.cfg-comp-item.active {
+    border-color: #e74c3c;
+    background: #fef2f2;
+}
+
+.cfg-comp-img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 4px;
+    background: #f9f9f9;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.cfg-comp-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cfg-comp-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+.cfg-comp-specs {
+    font-size: 12px;
+    color: #999;
+    margin-top: 2px;
+}
+
+.cfg-comp-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e74c3c;
+    white-space: nowrap;
+    margin-left: 10px;
+}
+
+/* Order Summary */
+.cfg-order-summary {
+    background: #f9f9f9;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 13px;
+}
+
+.cfg-order-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+}
+
+.cfg-order-total {
+    display: flex;
+    justify-content: space-between;
+    border-top: 2px solid #e74c3c;
+    margin-top: 8px;
+    padding-top: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #e74c3c;
+}
+
+/* Custom Modal */
+.cfg-custom-modal,
+#cfgCustomModal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 99999 !important;
+    display: block !important;
+}
+
+.cfg-custom-modal.show,
+#cfgCustomModal.show {
+    display: block !important;
+}
+
+.cfg-custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+
+.cfg-custom-modal-box {
+    position: relative;
+    background: #fff;
+    border-radius: 16px;
+    padding: 35px 30px 25px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 25px 70px rgba(0,0,0,0.3);
+    transform: scale(0.9);
+    opacity: 0;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.cfg-custom-modal.show .cfg-custom-modal-box {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.cfg-modal-icon {
+    font-size: 52px;
+    margin-bottom: 18px;
+}
+
+.cfg-modal-success { color: #27ae60; }
+.cfg-modal-error { color: #e74c3c; }
+.cfg-modal-warning { color: #f39c12; }
+.cfg-modal-confirm { color: #e74c3c; }
+
+.cfg-custom-modal-message {
+    font-size: 15px;
+    color: #333;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    padding: 0 10px;
+}
+
+.cfg-custom-modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.cfg-custom-modal-buttons .btn {
+    padding: 11px 35px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+}
+
+.btn-cfg-modal-ok,
+.btn-cfg-modal-success {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.btn-cfg-modal-ok:hover,
+.btn-cfg-modal-success:hover {
+    background: #c0392b;
+    color: #fff;
+}
+
+.btn-cfg-modal-error {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.btn-cfg-modal-error:hover {
+    background: #c0392b;
+    color: #fff;
+}
+
+.btn-cfg-modal-warning {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.btn-cfg-modal-warning:hover {
+    background: #c0392b;
+    color: #fff;
+}
+
+.btn-cfg-modal-cancel {
+    background: #f0f0f0;
+    color: #555;
+    border: 1px solid #ddd;
+}
+
+.btn-cfg-modal-cancel:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .cfg-sidebar {
+        position: static;
+        margin-top: 20px;
+    }
+}
+
+@media (max-width: 767px) {
+    .cfg-slot {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .cfg-slot-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .cfg-slot-price {
+        margin-right: 0;
+    }
+
+    .cfg-comp-item {
+        flex-wrap: wrap;
+    }
+}
+
+/* Qty picker in modal footer */
+.cfg-qty-picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: auto;
+}
+
+.cfg-qty-picker .cfg-qty-label {
+    font-size: 14px;
+    color: #555;
+}
+
+.cfg-qty-picker #cfg-qty-val {
+    display: inline-block;
+    min-width: 28px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#cfg-modal .modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Qty card inside modal */
+.cfg-qty-card {
+    text-align: center;
+    padding: 20px;
+    position: relative;
+}
+
+.cfg-qty-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.cfg-qty-back:hover { color: #333; }
+
+.cfg-qty-card-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.cfg-qty-card-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: #e74c3c;
+    margin-bottom: 20px;
+}
+
+.cfg-qty-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px 15px;
+}
+
+.cfg-qty-controls .btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 50%;
+}
+
+.cfg-qty-controls #cfg-qty-val {
+    font-size: 20px;
+    font-weight: 700;
+    min-width: 30px;
+    text-align: center;
+}
+
+.cfg-qty-confirm-btn {
+    display: block;
+    margin: 0 auto;
+    min-width: 160px;
+}
+
+.cfg-slot-qty-badge {
+    font-size: 15px;
+    font-weight: 700;
+    color: #333;
+}

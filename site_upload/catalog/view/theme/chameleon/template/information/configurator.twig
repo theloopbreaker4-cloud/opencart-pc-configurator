@@ -1,0 +1,259 @@
+{{ header }}
+<div class="container">
+    <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <div class="row" id="pc-configurator">
+        <!-- Left: Component Selection -->
+        <div class="col-sm-12 col-md-8">
+            <h1 class="cfg-page-title">{{ heading_title }}</h1>
+
+            <!-- System Unit -->
+            <div class="cfg-section">
+                <h2 class="cfg-section-title">{{ text_system_unit }}</h2>
+                {% for category in system_categories %}
+                <div class="cfg-slot" data-category-id="{{ category.category_id }}">
+                    <div class="cfg-slot-icon">
+                        <img src="catalog/view/javascript/configurator/icons/{{ category.icon }}" alt="" onerror="this.src='catalog/view/javascript/configurator/icons/default.svg'">
+                    </div>
+                    <div class="cfg-slot-info">
+                        <span class="cfg-slot-name">{{ category.name }}{% if category.required %} <span class="cfg-required">*</span>{% endif %}</span>
+                        <span class="cfg-selected-name"></span>
+                    </div>
+                    <div class="cfg-slot-price"></div>
+                    <div class="cfg-slot-actions" data-has-qty="{{ category.category_id in [3,8,9,10] ? '1' : '0' }}">
+                        <button class="btn btn-cfg-add" onclick="Configurator.openSelector({{ category.category_id }}, '{{ category.name|e('js') }}')">
+                            <span class="act-add"><i class="fa fa-plus"></i> {{ text_add }}</span>
+                            <span class="act-change" style="display:none"><i class="fa fa-pencil"></i> {{ text_change }}</span>
+                        </button>
+                        <button class="btn btn-cfg-remove" style="display:none" onclick="Configurator.removeComponent({{ category.category_id }})">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Periphery -->
+            <div class="cfg-section">
+                <h2 class="cfg-section-title">{{ text_periphery }}</h2>
+                {% for category in periphery_categories %}
+                <div class="cfg-slot" data-category-id="{{ category.category_id }}">
+                    <div class="cfg-slot-icon">
+                        <img src="catalog/view/javascript/configurator/icons/{{ category.icon }}" alt="" onerror="this.src='catalog/view/javascript/configurator/icons/default.svg'">
+                    </div>
+                    <div class="cfg-slot-info">
+                        <span class="cfg-slot-name">{{ category.name }}</span>
+                        <span class="cfg-selected-name"></span>
+                    </div>
+                    <div class="cfg-slot-price"></div>
+                    <div class="cfg-slot-actions" data-has-qty="{{ category.category_id in [3,8,9,10] ? '1' : '0' }}">
+                        <button class="btn btn-cfg-add" onclick="Configurator.openSelector({{ category.category_id }}, '{{ category.name|e('js') }}')">
+                            <span class="act-add"><i class="fa fa-plus"></i> {{ text_add }}</span>
+                            <span class="act-change" style="display:none"><i class="fa fa-pencil"></i> {{ text_change }}</span>
+                        </button>
+                        <button class="btn btn-cfg-remove" style="display:none" onclick="Configurator.removeComponent({{ category.category_id }})">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right: Summary Sidebar -->
+        <div class="col-sm-12 col-md-4">
+            <div class="cfg-sidebar">
+                <h3 class="cfg-sidebar-title">{{ text_total_price }}</h3>
+
+                <!-- Compatibility -->
+                <div id="cfg-compat" style="display:none"></div>
+
+                <!-- Price -->
+                <div class="cfg-price-block">
+                    <span class="cfg-currency">₾</span>
+                    <span id="cfg-total-price" class="cfg-total-amount">0</span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="cfg-actions">
+                    <button class="btn btn-cfg-action btn-clear" onclick="Configurator.clearAll()">
+                        <i class="fa fa-refresh"></i> {{ text_clear }}
+                    </button>
+                    <button class="btn btn-cfg-action btn-download" onclick="Configurator.downloadPdf()">
+                        <i class="fa fa-file-pdf-o"></i> {{ text_download_pdf }}
+                    </button>
+                    {% if cfg_show_save %}
+                    <button class="btn btn-cfg-action btn-save" onclick="Configurator.saveConfig()">
+                        <i class="fa fa-bookmark-o"></i> {{ text_save }}
+                    </button>
+                    {% endif %}
+                    {% if cfg_show_load %}
+                    <button class="btn btn-cfg-action btn-load" onclick="Configurator.openLoadForm()">
+                        <i class="fa fa-folder-open-o"></i> {{ text_load }}
+                    </button>
+                    {% endif %}
+                    <button class="btn btn-cfg-action btn-order-main" onclick="Configurator.openOrderForm()">
+                        <i class="fa fa-shopping-cart"></i> {{ text_add_to_cart }}
+                    </button>
+                </div>
+
+                <!-- Tips -->
+                <div class="cfg-tips">
+                    <div class="cfg-tip"><i class="fa fa-check-circle"></i> {{ text_tip_1 }}</div>
+                    <div class="cfg-tip"><i class="fa fa-check-circle"></i> {{ text_tip_2 }}</div>
+                    <div class="cfg-tip"><i class="fa fa-check-circle"></i> {{ text_tip_3 }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Component Selector Modal -->
+<div class="modal fade" id="cfg-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title" id="cfg-modal-title">{{ text_select_component }}</h4>
+            </div>
+            <div class="modal-body">
+                <div class="cfg-search">
+                    <input type="text" class="form-control" id="cfg-search-input" placeholder="{{ text_search }}..." oninput="Configurator.filterComponents(this.value)">
+                </div>
+                <div id="cfg-component-list" class="cfg-component-list">
+                    <div class="text-center" style="padding:40px;color:#999">{{ text_loading }}...</div>
+                </div>
+            </div>
+            <div class="modal-footer" id="cfg-modal-footer" style="display:none">
+                <div class="cfg-qty-picker">
+                    <span class="cfg-qty-label">{{ text_quantity|default('რაოდენობა') }}:</span>
+                    <button class="btn btn-default btn-sm" id="cfg-qty-minus">-</button>
+                    <span id="cfg-qty-val">1</span>
+                    <button class="btn btn-default btn-sm" id="cfg-qty-plus">+</button>
+                </div>
+                <button class="btn btn-danger" id="cfg-qty-confirm">{{ text_add }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Form Modal -->
+<div class="modal fade" id="cfg-order-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">{{ text_order_title }}</h4>
+            </div>
+            <div class="modal-body">
+                <div id="cfg-order-summary" class="cfg-order-summary"></div>
+                <form id="cfg-order-form">
+                    <div class="form-group">
+                        <label>{{ text_name }} *</label>
+                        <input type="text" name="customer_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ text_phone }} *</label>
+                        <input type="tel" name="customer_phone" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ text_email }}</label>
+                        <input type="email" name="customer_email" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ text_comment }}</label>
+                        <textarea name="comment" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{ text_close }}</button>
+                <button type="button" class="btn btn-danger" onclick="Configurator.submitOrder()">{{ text_submit_order }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load Config Modal -->
+<div class="modal fade" id="cfg-load-modal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">{{ text_load_title }}</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>{{ text_load_label }}</label>
+                    <input type="text" id="cfg-load-code" class="form-control" placeholder="CFG-00001">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{ text_close }}</button>
+                <button type="button" class="btn btn-danger" onclick="Configurator.loadConfig()">{{ text_load }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var CfgConfig = {
+    apiGetComponents: '{{ api_get_components }}',
+    apiCheckCompatibility: '{{ api_check_compatibility }}',
+    apiDownloadPdf: '{{ api_download_pdf }}',
+    apiSubmitOrder: '{{ api_submit_order }}',
+    apiSaveConfig: '{{ api_save_config }}',
+    apiLoadConfig: '{{ api_load_config }}',
+    requiredCategories: {
+        {% for cat in system_categories %}{% if cat.required %}{{ cat.category_id }}: '{{ cat.name|e('js') }}'{% if not loop.last %},{% endif %}{% endif %}{% endfor %}
+    },
+    apiCartAdd: 'index.php?route=checkout/cart/add',
+    apiCartReplace: '{{ api_cart_replace }}',
+    cartUrl: 'index.php?route=checkout/cart',
+    texts: {
+        add: '{{ text_add }}',
+        change: '{{ text_change }}',
+        compatOk: '{{ text_compatibility_ok }}',
+        compatError: '{{ text_compatibility_error }}',
+        errSocketMismatch: '{{ error_socket_mismatch|e('js') }}',
+        errRamMismatch: '{{ error_ram_mismatch|e('js') }}',
+        errFormFactor: '{{ error_form_factor_mismatch|e('js') }}',
+        errPsuWarning: '{{ error_psu_warning|e('js') }}',
+        errRuleMismatch: '{{ error_rule_incompatible|e('js') }}',
+        noComponents: '{{ text_no_components }}',
+        orderSuccess: '{{ text_order_success }}',
+        selectFirst: '{{ text_select_components_first }}',
+        sending: '{{ text_sending }}',
+        warning: '{{ text_warning }}',
+        confirmClear: '{{ text_js_confirm_clear }}',
+        cancel: '{{ text_js_cancel }}',
+        confirm: '{{ text_js_confirm }}',
+        total: '{{ text_js_total }}',
+        fillRequired: '{{ text_js_fill_required }}',
+        error: '{{ text_js_error }}',
+        configSaved: '{{ text_js_config_saved }}',
+        configCode: '{{ text_js_config_code }}',
+        configUseLater: '{{ text_js_config_use_later }}',
+        configLoaded: '{{ text_js_config_loaded }}',
+        discountComment: '{{ text_js_discount_comment }}',
+        missingComponents: '{{ text_js_missing_components }}',
+        addingToCart: '{{ text_js_adding_to_cart|default("Adding to cart...") }}',
+        cartSuccess: '{{ text_js_cart_success|default("Added to cart!") }}',
+        cartPartial: '{{ text_js_cart_partial|default("Some items could not be added") }}'
+    },
+    settings: {
+        showSave:   {{ cfg_show_save|default(0) }},
+        showLoad:   {{ cfg_show_load|default(0) }},
+        qtyRam:     {{ cfg_qty_ram|default(4) }},
+        qtySsd:     {{ cfg_qty_ssd|default(4) }},
+        qtyHdd:     {{ cfg_qty_hdd|default(4) }},
+        qtyCasefan: {{ cfg_qty_casefan|default(8) }},
+        qtyMonitor: {{ cfg_qty_monitor|default(3) }}
+    }
+};
+</script>
+{{ footer }}
