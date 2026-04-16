@@ -50,7 +50,7 @@ class ControllerInformationConfigurator extends Controller {
             'text_js_config_loaded', 'text_js_discount_comment',
             'text_js_adding_to_cart', 'text_js_cart_success', 'text_js_cart_partial',
             'text_add_to_cart', 'text_js_missing_components',
-            'error_socket_mismatch', 'error_ram_mismatch', 'error_form_factor_mismatch', 'error_psu_warning'
+            'error_socket_mismatch', 'error_ram_mismatch', 'error_form_factor_mismatch', 'error_psu_warning', 'error_cooler_socket'
         );
 
         foreach ($text_keys as $key) {
@@ -256,6 +256,23 @@ class ControllerInformationConfigurator extends Controller {
             $estimated_power += 100;
             if ($psu_wattage < $estimated_power) {
                 $json['warning_codes'][] = array('type' => 'psu', 'p1' => $psu_wattage, 'p2' => ($estimated_power + 100));
+            }
+        }
+
+        // Cooler socket compatibility (cat 6 = Air Cooler, cat 18 = Water Cooler)
+        if ($cpu_socket) {
+            foreach (array(6, 18) as $cooler_cat) {
+                if (isset($component_data[$cooler_cat])) {
+                    $cooler_sockets_raw = isset($component_data[$cooler_cat]['attrs']['sockets'])
+                        ? $component_data[$cooler_cat]['attrs']['sockets'] : null;
+                    if ($cooler_sockets_raw) {
+                        $cooler_sockets = array_map('strtolower', array_map('trim', explode(',', $cooler_sockets_raw)));
+                        if (!in_array(strtolower($cpu_socket), $cooler_sockets)) {
+                            $json['compatible'] = false;
+                            $json['error_codes'][] = array('type' => 'cooler_socket', 'p1' => $cpu_socket, 'p2' => $cooler_sockets_raw);
+                        }
+                    }
+                }
             }
         }
 
@@ -474,9 +491,9 @@ tr:nth-child(even){background:#f9f9f9}
 
         $json = array();
 
-        // Rate limit - 1 order per 30 seconds
-        if (isset($this->session->data['cfg_last_order']) && (time() - $this->session->data['cfg_last_order']) < 30) {
-            $json['error'] = 'Please wait before submitting another order';
+        // Rate limit - 1 order per 60 seconds
+        if (isset($this->session->data['cfg_last_order']) && (time() - $this->session->data['cfg_last_order']) < 60) {
+            $json['error'] = $this->language->get('error_rate_limit');
             $this->response->addHeader('Content-Type: application/json');
             $this->response->setOutput(json_encode($json));
             return;

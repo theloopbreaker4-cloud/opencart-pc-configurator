@@ -149,3 +149,30 @@ INSERT IGNORE INTO `oc_setting` (`store_id`, `code`, `key`, `value`, `serialized
 (0, 'cfg', 'cfg_qty_hdd',     '4', 0),
 (0, 'cfg', 'cfg_qty_casefan', '8', 0),
 (0, 'cfg', 'cfg_qty_monitor', '3', 0);
+
+-- 7. Patch 5: Create 'sockets' attribute for cooler socket compatibility
+-- This attribute is added to CPU coolers (cat 6) and water coolers (cat 18)
+-- Value format: LGA1700,LGA1200,LGA1151,AM4,AM5
+
+INSERT IGNORE INTO `oc_attribute_group` (`sort_order`) VALUES (10);
+SET @attr_group_id = (SELECT attribute_group_id FROM `oc_attribute_group_description` WHERE `name` = 'მახასიათებლები' LIMIT 1);
+
+-- Only create if 'sockets' attribute does not exist
+SET @sockets_exists = (SELECT COUNT(*) FROM `oc_attribute_description` WHERE `name` = 'sockets');
+SET @sql_attr = IF(@sockets_exists = 0,
+    CONCAT("INSERT INTO `oc_attribute` (`attribute_group_id`, `sort_order`) VALUES (", @attr_group_id, ", 0)"),
+    "SELECT 1"
+);
+PREPARE stmt_attr FROM @sql_attr;
+EXECUTE stmt_attr;
+DEALLOCATE PREPARE stmt_attr;
+
+SET @new_attr_id = IF(@sockets_exists = 0, LAST_INSERT_ID(), (SELECT attribute_id FROM `oc_attribute_description` WHERE `name` = 'sockets' LIMIT 1));
+
+SET @sql_attr_desc = IF(@sockets_exists = 0,
+    CONCAT("INSERT INTO `oc_attribute_description` (`attribute_id`, `language_id`, `name`) VALUES (", @new_attr_id, ", 1, 'sockets'), (", @new_attr_id, ", 2, 'sockets'), (", @new_attr_id, ", 3, 'sockets')"),
+    "SELECT 1"
+);
+PREPARE stmt_attr_desc FROM @sql_attr_desc;
+EXECUTE stmt_attr_desc;
+DEALLOCATE PREPARE stmt_attr_desc;

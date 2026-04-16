@@ -314,10 +314,13 @@ var Configurator = (function() {
                 var warnings = formatCompatMessages(data.warning_codes || [], data.warnings || []);
                 if (errors.length) {
                     $el.attr('class', 'compat-error').html('<i class="fa fa-exclamation-triangle"></i> ' + errors.map(esc).join('<br>')).show();
+                    $('.btn-cart').prop('disabled', true).css('opacity', '0.5');
                 } else if (warnings.length) {
                     $el.attr('class', 'compat-warning').html('<i class="fa fa-warning"></i> ' + warnings.map(esc).join('<br>')).show();
+                    $('.btn-cart').prop('disabled', false).css('opacity', '');
                 } else {
                     $el.attr('class', 'compat-ok').html('<i class="fa fa-check"></i> ' + CfgConfig.texts.compatOk).show();
+                    $('.btn-cart').prop('disabled', false).css('opacity', '');
                 }
             }
         });
@@ -559,6 +562,7 @@ var Configurator = (function() {
                 else if (c.type === 'form') tpl = CfgConfig.texts.errFormFactor;
                 else if (c.type === 'psu') tpl = CfgConfig.texts.errPsuWarning;
                 else if (c.type === 'rule') tpl = CfgConfig.texts.errRuleMismatch;
+                else if (c.type === 'cooler_socket') tpl = CfgConfig.texts.errCoolerSocket;
                 if (tpl) return tpl.replace('%s', c.p1).replace('%s', c.p2);
                 return c.p1 + ' / ' + c.p2;
             });

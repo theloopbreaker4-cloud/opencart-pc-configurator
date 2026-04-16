@@ -37,15 +37,17 @@ $_['text_select_components_first'] = 'Please select components first';
 $_['text_sending']               = 'Sending...';
 
 // Tips
-$_['text_tip_1']                 = 'Contact us for delivery pricing based on your selected components.';
+$_['text_tip_1']                 = 'To order your selected configuration, contact us by phone or message us via messenger.';
 $_['text_tip_2']                 = 'Assembly and software installation is free when all system unit components are selected.';
-$_['text_tip_3']                 = 'System unit is assembled within 1-3 business days after ordering.';
+$_['text_tip_3']                 = 'System unit is assembled within 1-3 days after ordering. Please confirm the exact timeframe when placing your order.';
 
 // Compatibility
 $_['error_socket_mismatch']      = 'CPU socket (%s) does not match motherboard socket (%s)';
 $_['error_ram_mismatch']         = 'RAM type (%s) does not match motherboard supported type (%s)';
 $_['error_form_factor_mismatch'] = 'Motherboard form factor (%s) does not fit in case (%s)';
 $_['error_psu_warning']          = 'PSU wattage (%sW) may be insufficient. Recommended minimum %sW';
+$_['error_cooler_socket']        = 'Cooler does not support CPU socket %s (supported: %s)';
+$_['error_rate_limit']           = 'Please wait 1 minute between order submissions.';
 
 // PDF
 $_['text_pdf_title']             = 'PC Configuration';

@@ -175,8 +175,26 @@ class ModelCatalogConfigurator extends Model {
     }
 
     public function getComponentAttributes($component_id) {
+        $rows = array();
+
+        // Try custom pc_component_attribute table
         $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "pc_component_attribute` WHERE component_id = '" . (int)$component_id . "'");
-        return $query->rows;
+        $rows = $query->rows;
+
+        // Read from standard OpenCart oc_product_attribute (component_id = product_id)
+        // Use any language_id since attribute names (sockets) are the same in all languages
+        $attrs = $this->db->query("
+            SELECT ad.name AS attribute_name, pa.text AS attribute_value
+            FROM `" . DB_PREFIX . "product_attribute` pa
+            LEFT JOIN `" . DB_PREFIX . "attribute_description` ad ON pa.attribute_id = ad.attribute_id
+            WHERE pa.product_id = '" . (int)$component_id . "'
+            GROUP BY pa.attribute_id
+        ");
+        foreach ($attrs->rows as $attr) {
+            $rows[] = array('attribute_name' => $attr['attribute_name'], 'attribute_value' => $attr['attribute_value']);
+        }
+
+        return $rows;
     }
 
     public function getConfiguration($config_id) {

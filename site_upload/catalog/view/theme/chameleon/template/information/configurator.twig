@@ -96,7 +96,7 @@
                         <i class="fa fa-folder-open-o"></i> {{ text_load }}
                     </button>
                     {% endif %}
-                    <button class="btn btn-cfg-action btn-order-main" onclick="Configurator.openOrderForm()">
+                    <button class="btn btn-cfg-action btn-order-main btn-cart" onclick="Configurator.openOrderForm()">
                         <i class="fa fa-shopping-cart"></i> {{ text_add_to_cart }}
                     </button>
                 </div>
@@ -224,6 +224,7 @@ var CfgConfig = {
         errFormFactor: '{{ error_form_factor_mismatch|e('js') }}',
         errPsuWarning: '{{ error_psu_warning|e('js') }}',
         errRuleMismatch: '{{ error_rule_incompatible|e('js') }}',
+        errCoolerSocket: '{{ error_cooler_socket|e('js') }}',
         noComponents: '{{ text_no_components }}',
         orderSuccess: '{{ text_order_success }}',
         selectFirst: '{{ text_select_components_first }}',
