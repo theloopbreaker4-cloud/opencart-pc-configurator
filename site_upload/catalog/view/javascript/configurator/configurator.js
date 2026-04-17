@@ -134,6 +134,16 @@ var Configurator = (function() {
                     if (compatible.length) filtered = compatible;
                 }
             }
+            // Filter RAM by motherboard DDR type
+            if (categoryId == 3 && selected[2]) {
+                var mbRam = extractRamType(selected[2].name);
+                if (mbRam) {
+                    var compatRam = allComponents.filter(function(c) {
+                        return extractRamType(c.name) === mbRam;
+                    });
+                    if (compatRam.length) filtered = compatRam;
+                }
+            }
             renderComponents(filtered);
         });
     }
@@ -597,6 +607,11 @@ var Configurator = (function() {
             });
         }
         return fallback || [];
+    }
+
+    function extractRamType(name) {
+        var m = name.match(/\b(DDR5|DDR4|DDR3)\b/i);
+        return m ? m[1].toUpperCase() : null;
     }
 
     function extractSocket(name) {
