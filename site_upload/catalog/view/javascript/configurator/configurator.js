@@ -123,7 +123,18 @@ var Configurator = (function() {
 
         $.getJSON(CfgConfig.apiGetComponents + '&category_id=' + categoryId, function(data) {
             allComponents = data.components || [];
-            renderComponents(allComponents);
+            var filtered = allComponents;
+            // Filter motherboards by CPU socket
+            if (categoryId == 2 && selected[1]) {
+                var cpuSocket = extractSocket(selected[1].name);
+                if (cpuSocket) {
+                    var compatible = allComponents.filter(function(c) {
+                        return extractSocket(c.name) === cpuSocket;
+                    });
+                    if (compatible.length) filtered = compatible;
+                }
+            }
+            renderComponents(filtered);
         });
     }
 
@@ -176,6 +187,7 @@ var Configurator = (function() {
                 updateSlot(currentCategoryId);
                 updateTotal();
                 checkCompatibility();
+                updateCoolerExclusion();
                 $('#cfg-modal').modal('hide');
             }
         });
@@ -231,6 +243,7 @@ var Configurator = (function() {
             updateSlot(currentCategoryId);
             updateTotal();
             checkCompatibility();
+            updateCoolerExclusion();
             $('#cfg-modal').modal('hide');
         });
     }
@@ -249,6 +262,7 @@ var Configurator = (function() {
         updateSlot(categoryId);
         updateTotal();
         checkCompatibility();
+        updateCoolerExclusion();
     }
 
     function clearAll() {
@@ -262,6 +276,21 @@ var Configurator = (function() {
             updateTotal();
             $('#cfg-compat').hide();
         });
+    }
+
+    function updateCoolerExclusion() {
+        var hasAir = !!selected[6];
+        var hasWater = !!selected[18];
+        var $airSlot = $('.cfg-slot[data-category-id="6"]');
+        var $waterSlot = $('.cfg-slot[data-category-id="18"]');
+        if (hasAir) {
+            $waterSlot.addClass('cfg-slot-disabled').find('.btn-cfg-add, .btn-cfg-change, .act-add, .act-change').prop('disabled', true).css('opacity', '0.4').attr('title', CfgConfig.texts.coolerExclusion || '');
+        } else if (hasWater) {
+            $airSlot.addClass('cfg-slot-disabled').find('.btn-cfg-add, .btn-cfg-change, .act-add, .act-change').prop('disabled', true).css('opacity', '0.4').attr('title', CfgConfig.texts.coolerExclusion || '');
+        } else {
+            $airSlot.removeClass('cfg-slot-disabled').find('.btn-cfg-add, .btn-cfg-change, .act-add, .act-change').prop('disabled', false).css('opacity', '').attr('title', '');
+            $waterSlot.removeClass('cfg-slot-disabled').find('.btn-cfg-add, .btn-cfg-change, .act-add, .act-change').prop('disabled', false).css('opacity', '').attr('title', '');
+        }
     }
 
     function updateSlot(categoryId) {
@@ -570,11 +599,19 @@ var Configurator = (function() {
         return fallback || [];
     }
 
+    function extractSocket(name) {
+        var sockets = ['LGA1851','LGA1700','LGA1200','LGA1151','LGA1150','LGA2066','LGA1366','AM5','AM4','AM3','sTRX4','TR4','sTR5'];
+        for (var i = 0; i < sockets.length; i++) {
+            if (name.toUpperCase().indexOf(sockets[i].toUpperCase()) !== -1) return sockets[i];
+        }
+        return null;
+    }
+
     function esc(s) { return $('<div>').text(s || '').html(); }
     function escAttr(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
     // Restore selected on page load
-    $(function() { initQtyCategories(); loadSelected(); });
+    $(function() { initQtyCategories(); loadSelected(); updateCoolerExclusion(); });
 
     return {
         openSelector: openSelector,
