@@ -119,7 +119,9 @@ var Configurator = (function() {
         $('#cfg-modal-title').text(categoryName);
         $('#cfg-search-input').val('');
         $('#cfg-component-list').html('<div class="text-center" style="padding:40px;color:#999"><i class="fa fa-spinner fa-spin"></i></div>');
-        $('#cfg-modal').modal('show');
+        $('#cfg-modal').modal('show').one('shown.bs.modal', function() {
+            $('#cfg-search-input').trigger('focus');
+        });
 
         $.getJSON(CfgConfig.apiGetComponents + '&category_id=' + categoryId, function(data) {
             allComponents = data.components || [];
