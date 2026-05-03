@@ -33,36 +33,6 @@ class ControllerCommonColumnLeft extends Controller {
 				'children' => array()
 			);
 
-
-			// PC Builder
-			$pc_builder = array();
-			
-			if ($this->user->hasPermission('access', 'extension/pc_builder/pc_builder_category')) {
-				$pc_builder[] = array(
-					'name'	   => $this->language->get('text_pc_builder_categories'),
-					'href'     => $this->url->link('extension/pc_builder/pc_builder_category', 'user_token=' . $this->session->data['user_token'], true),
-					'children' => array()		
-				);
-			}
-			
-			if ($this->user->hasPermission('access', 'extension/pc_builder/pc_builder_component')) {
-				$pc_builder[] = array(
-					'name'	   => $this->language->get('text_pc_builder_components'),
-					'href'     => $this->url->link('extension/pc_builder/pc_builder_component', 'user_token=' . $this->session->data['user_token'], true),
-					'children' => array()		
-				);
-			}
-
-			if ($pc_builder) {
-				$data['menus'][] = array(
-					'id'       => 'menu-pc-builder',
-					'icon'	   => 'fa-puzzle-piece', 
-					'name'	   => $this->language->get('text_pc_builder'),
-					'href'     => '',
-					'children' => $pc_builder
-				);		
-			}
-
 			// PC Configurator
 			if ($this->user->hasPermission('access', 'extension/module/configurator')) {
 				$data['menus'][] = array(

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+  <name>GCOMP Configurator - Admin Menu</name>
+  <code>gcomp_configurator_menu</code>
+  <version>1.0</version>
+  <author>gcomp.ge</author>
+
+  <!-- Add Configurator menu item to admin sidebar -->
+  <file path="admin/controller/common/column_left.php">
+    <operation>
+      <search><![CDATA[// Catalog
+			$catalog = array();]]></search>
+      <add position="before"><![CDATA[
+			// PC Configurator
+			if ($this->user->hasPermission('access', 'extension/module/configurator')) {
+				$data['menus'][] = array(
+					'id'       => 'menu-configurator',
+					'icon'	   => 'fa-cogs',
+					'name'	   => 'კონფიგურატორი',
+					'href'     => $this->url->link('extension/module/configurator', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => array()
+				);
+			}
+
+      ]]></add>
+    </operation>
+  </file>
+
+</modification>
