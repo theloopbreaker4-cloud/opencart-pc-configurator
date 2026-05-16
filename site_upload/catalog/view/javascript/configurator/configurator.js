@@ -378,6 +378,17 @@ var Configurator = (function() {
         window.open(url, '_blank');
     }
 
+    function downloadExcel() {
+        if (!Object.keys(selected).length) { showAlert(CfgConfig.texts.selectFirst); return; }
+
+        var data = {};
+        for (var id in selected) {
+            data[id] = { id: selected[id].id, qty: selected[id].quantity || 1 };
+        }
+        var url = CfgConfig.apiDownloadExcel + '&cfg=' + btoa(JSON.stringify(data));
+        window.location.href = url;
+    }
+
     function openOrderForm() {
         if (!Object.keys(selected).length) { showAlert(CfgConfig.texts.selectFirst); return; }
 
@@ -636,6 +647,7 @@ var Configurator = (function() {
         removeComponent: removeComponent,
         clearAll: clearAll,
         downloadPdf: downloadPdf,
+        downloadExcel: downloadExcel,
         openOrderForm: openOrderForm,
         submitOrder: submitOrder,
         requestDiscount: requestDiscount,

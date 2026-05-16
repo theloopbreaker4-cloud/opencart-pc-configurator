@@ -1,16 +1,4 @@
 <?php
-/**
- * PC Configurator — Admin Model
- *
- * Database operations for the admin panel: orders, manual components,
- * compatibility rules, category management, catalog product queries.
- *
- * @package  PC Configurator for OpenCart
- * @version  1.4.0
- * @author   gcomp.ge
- * @license  MIT
- * @link     https://github.com/YOUR_USERNAME/oc-pc-configurator
- */
 class ModelExtensionModuleConfigurator extends Model {
 
     // Orders
@@ -97,19 +85,44 @@ class ModelExtensionModuleConfigurator extends Model {
             3  => array(274),
             4  => array(273),
             5  => array(277),
-            6  => array(407),
+            6  => array(276),
             7  => array(278),
             8  => array(275),
             9  => array(275),
-            10 => array(),
+            10 => array(276),
             11 => array(318),
             12 => array(284, 426, 429),
             13 => array(285, 427, 428),
             14 => array(287),
             15 => array(288),
             16 => array(286),
+            18 => array(276),
             17 => array(289),
         );
+
+        // Special: cfg_category_id=99 (Other) — products not in any mapped OC category
+        if ((int)$cfg_category_id == 99) {
+            $mapped = array();
+            foreach ($category_map as $cfg => $ocs) {
+                foreach ($ocs as $oc) { $mapped[(int)$oc] = true; }
+            }
+            if (empty($mapped)) return array();
+            $excluded = implode(',', array_keys($mapped));
+            $lang_id = (int)$this->config->get('config_language_id');
+            $query = $this->db->query("
+                SELECT DISTINCT p.product_id, pd.name, p.price, p.quantity, p.status, p.image
+                FROM `" . DB_PREFIX . "product` p
+                JOIN `" . DB_PREFIX . "product_description` pd ON p.product_id = pd.product_id AND pd.language_id = '" . $lang_id . "'
+                WHERE p.status = 1
+                  AND p.product_id NOT IN (
+                      SELECT DISTINCT product_id FROM `" . DB_PREFIX . "product_to_category`
+                      WHERE category_id IN (" . $excluded . ")
+                  )
+                ORDER BY pd.name ASC
+                LIMIT " . (int)(($page - 1) * $limit) . "," . (int)$limit . "
+            ");
+            return $query->rows;
+        }
 
         if (!isset($category_map[$cfg_category_id]) || empty($category_map[$cfg_category_id])) {
             return array();
@@ -138,15 +151,16 @@ class ModelExtensionModuleConfigurator extends Model {
             3  => array(274),
             4  => array(273),
             5  => array(277),
-            6  => array(407),
+            6  => array(276),
             7  => array(278),
             8  => array(275),
             9  => array(275),
-            10 => array(),
+            10 => array(276),
             11 => array(318),
             12 => array(284, 426, 429),
             13 => array(285, 427, 428),
             14 => array(287),
+            18 => array(276),
             15 => array(288),
             16 => array(286),
             17 => array(289),
@@ -159,6 +173,18 @@ class ModelExtensionModuleConfigurator extends Model {
             $q = $this->db->query("SELECT COUNT(DISTINCT p.product_id) as cnt FROM `" . DB_PREFIX . "product` p JOIN `" . DB_PREFIX . "product_to_category` p2c ON p.product_id = p2c.product_id WHERE p2c.category_id IN (" . $ids . ") AND p.status = 1 AND p.quantity > 0");
             $counts[$cfg_id] = (int)$q->row['cnt'];
         }
+
+        // Cat 99 (Other): products not in any mapped OC category
+        $all_mapped = array();
+        foreach ($category_map as $oc_ids) {
+            foreach ($oc_ids as $oc) { $all_mapped[(int)$oc] = true; }
+        }
+        if (!empty($all_mapped)) {
+            $excluded = implode(',', array_keys($all_mapped));
+            $q = $this->db->query("SELECT COUNT(DISTINCT p.product_id) as cnt FROM `" . DB_PREFIX . "product` p WHERE p.status = 1 AND p.quantity > 0 AND p.product_id NOT IN (SELECT DISTINCT product_id FROM `" . DB_PREFIX . "product_to_category` WHERE category_id IN (" . $excluded . "))");
+            $counts[99] = (int)$q->row['cnt'];
+        }
+
         return $counts;
     }
 

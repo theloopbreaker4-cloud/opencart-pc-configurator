@@ -67,6 +67,70 @@ Admin → Extensions → Modifications → Refresh
 
 ---
 
+## OCMOD Packaging — Critical Rules
+
+OpenCart 3 на этом проекте (3.0.3.8 + Chameleon, Hostinger shared hosting) очень капризен к OCMOD-zip. Несоблюдение любого пункта = мод установится в БД (status=1) но патч **не применится**, в логах тишина, в скомпилированном файле исходник без правок. Часы отладки.
+
+### Структура zip
+
+- `install.xml` строго **в корне** zip, НЕ в `upload/`. Папка `upload/` нужна только для full-extension zip с файлами модуля; для чистого OCMOD-патча — корень.
+- Forward slashes (`/`) в путях zip, не backslashes. PowerShell `Compress-Archive` файла напрямую (без обёртки в подпапку) даёт правильно.
+- Эталон рабочих структур на проекте: `gcomp_social_global.ocmod.zip`, `gcomp_only_online.ocmod.zip` — оба содержат только `install.xml` в корне.
+
+### Кодировка XML
+
+- **Без BOM**. Первые 3 байта должны быть `3C 3F 78` (`<?x`), не `EF BB BF`.
+- **LF, не CRLF**. PowerShell:
+  ```powershell
+  $content = $content -replace "`r`n", "`n"
+  $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+  [System.IO.File]::WriteAllText($path, $content, $utf8NoBom)
+  ```
+
+### `<search>` блок
+
+- **Однострочный якорь** надёжнее многострочного. Многострочный `<search>` чувствителен к каждому пробелу/табу/EOL — на Chameleon-сборке часто фейлит молча.
+- Якорь = **уникальная** строка, которую другие моды не трогают. Грепнуть в исходнике: должна быть ровно одна копия.
+- Хороший якорь в `column_left.php`: `if ($this->user->hasPermission('access', 'catalog/category')) {` — встречается 1 раз, Chameleon не правит.
+- Плохой якорь: `// Catalog\n\t\t\t$catalog = array();` — двухстрочный + Chameleon сдвигает отступы перед этой зоной.
+
+### Версия мода
+
+При каждой правке XML поднимать `<version>` (3.0 → 4.0 → 5.0). OpenCart по `<code>` определяет дубль; если version не поменялась — может оставить старую запись в БД.
+
+### Refresh-фейлы
+
+На Hostinger shared hosting Refresh иногда не может рекурсивно удалить `storage/modification/`:
+```
+PHP Warning: rmdir(...): Directory not empty in admin/controller/marketplace/modification.php on line 105
+```
+Refresh обрывается, патчи не записываются. Лечится **ручным удалением** `storage/modification/admin/` (или всей `storage/modification/`) через FTP, потом Refresh с нуля.
+
+PHP-скрипт для очистки (положить в `site/public_html/clear_mod.php`, открыть в браузере):
+```php
+<?php
+function rrmdir($d) { if (!is_dir($d)) return; foreach (scandir($d) as $i) { if ($i==='.'||$i==='..') continue; $p=$d.'/'.$i; is_dir($p)?rrmdir($p):unlink($p); } rmdir($d); }
+rrmdir(__DIR__.'/storage/modification/admin');
+echo "ok"; unlink(__FILE__);
+```
+
+### OPcache
+
+После Refresh обязательно сбросить OPcache, иначе PHP отдаёт старый байткод:
+```php
+<?php opcache_reset(); echo "ok"; unlink(__FILE__);
+```
+
+### Диагностика — порядок шагов
+
+1. SQL: `SELECT modification_id, code, version, status FROM oc_modification WHERE code LIKE '%мой_код%';` — мод вообще зарегистрирован?
+2. SQL: `SELECT xml FROM oc_modification WHERE code='мой_код';` — XML в БД корректный (без BOM, не битый)?
+3. FTP: `system/storage/logs/error.log` — есть rmdir-ошибки?
+4. FTP: `storage/modification/admin/controller/common/column_left.php` — содержит ли наши строки после Refresh? Грепнуть по уникальному id типа `menu-configurator`.
+5. Если в скомпилированном файле наших строк нет, но в БД мод есть → `<search>` не сматчился. Менять якорь на однострочный, поднимать version, переустанавливать.
+
+---
+
 ## File Structure
 
 ```

@@ -9,6 +9,7 @@ $_['text_periphery']             = 'პერიფერია';
 $_['text_total_price']           = 'ჯამური ფასი';
 $_['text_clear']                 = 'გასუფთავება';
 $_['text_download_pdf']          = 'PDF ჩამოტვირთვა';
+$_['text_download_excel']        = 'Excel ჩამოტვირთვა';
 $_['text_order']                 = 'შეკვეთა';
 $_['text_request_discount']      = 'ფასდაკლების მოთხოვნა';
 $_['text_add']                   = 'დამატება';

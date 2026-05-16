@@ -1,16 +1,4 @@
 <?php
-/**
- * PC Configurator — Admin Controller
- *
- * Handles admin panel: orders list, manual components, compatibility rules,
- * category editing, catalog preview, and module settings.
- *
- * @package  PC Configurator for OpenCart
- * @version  1.4.0
- * @author   gcomp.ge
- * @license  MIT
- * @link     https://github.com/YOUR_USERNAME/oc-pc-configurator
- */
 class ControllerExtensionModuleConfigurator extends Controller {
 
     private $error = array();
@@ -108,8 +96,16 @@ class ControllerExtensionModuleConfigurator extends Controller {
         // Settings
         $this->load->model('setting/setting');
         $settings = $this->model_setting_setting->getSetting('cfg');
-        $data['cfg_show_save']     = isset($settings['cfg_show_save'])    ? (int)$settings['cfg_show_save']    : 0;
-        $data['cfg_show_load']     = isset($settings['cfg_show_load'])    ? (int)$settings['cfg_show_load']    : 0;
+        // Save/Load merged. Migrate old cfg_show_save/cfg_show_load -> cfg_show_saveload (OR-logic).
+        if (isset($settings['cfg_show_saveload'])) {
+            $data['cfg_show_saveload'] = (int)$settings['cfg_show_saveload'];
+        } else {
+            $old_save = isset($settings['cfg_show_save']) ? (int)$settings['cfg_show_save'] : 0;
+            $old_load = isset($settings['cfg_show_load']) ? (int)$settings['cfg_show_load'] : 0;
+            $data['cfg_show_saveload'] = ($old_save || $old_load) ? 1 : 0;
+        }
+        $data['cfg_show_pdf']      = isset($settings['cfg_show_pdf'])     ? (int)$settings['cfg_show_pdf']     : 1;
+        $data['cfg_show_excel']    = isset($settings['cfg_show_excel'])   ? (int)$settings['cfg_show_excel']   : 1;
         $data['cfg_qty_ram']       = isset($settings['cfg_qty_ram'])      ? (int)$settings['cfg_qty_ram']      : 4;
         $data['cfg_qty_ssd']       = isset($settings['cfg_qty_ssd'])      ? (int)$settings['cfg_qty_ssd']      : 4;
         $data['cfg_qty_hdd']       = isset($settings['cfg_qty_hdd'])      ? (int)$settings['cfg_qty_hdd']      : 4;
@@ -201,7 +197,7 @@ class ControllerExtensionModuleConfigurator extends Controller {
             'text_btn_add', 'text_btn_delete', 'text_no_manual_components',
             'text_btn_add_rule', 'text_rules_hint', 'text_no_manual_rules', 'text_col_type',
             'text_settings_title', 'text_settings_buttons', 'text_settings_qty',
-            'text_cfg_show_save', 'text_cfg_show_load', 'text_cfg_qty_ram', 'text_cfg_qty_casefan', 'text_cfg_qty_monitor',
+            'text_cfg_show_saveload', 'text_cfg_show_pdf', 'text_cfg_show_excel', 'text_cfg_qty_ram', 'text_cfg_qty_casefan', 'text_cfg_qty_monitor',
             'text_help_how', 'text_help_products_title', 'text_help_products_body',
             'text_help_compat_title', 'text_help_compat_body',
             'text_help_manual_title', 'text_help_manual_body',
@@ -313,8 +309,9 @@ class ControllerExtensionModuleConfigurator extends Controller {
         $this->load->model('setting/setting');
 
         $data = array(
-            'cfg_show_save'   => isset($this->request->post['cfg_show_save'])   ? 1 : 0,
-            'cfg_show_load'   => isset($this->request->post['cfg_show_load'])   ? 1 : 0,
+            'cfg_show_saveload' => isset($this->request->post['cfg_show_saveload']) ? 1 : 0,
+            'cfg_show_pdf'      => isset($this->request->post['cfg_show_pdf'])      ? 1 : 0,
+            'cfg_show_excel'    => isset($this->request->post['cfg_show_excel'])    ? 1 : 0,
             'cfg_qty_ram'     => max(1, min(8,  (int)$this->request->post['cfg_qty_ram'])),
             'cfg_qty_ssd'     => max(1, min(8,  (int)$this->request->post['cfg_qty_ssd'])),
             'cfg_qty_hdd'     => max(1, min(8,  (int)$this->request->post['cfg_qty_hdd'])),

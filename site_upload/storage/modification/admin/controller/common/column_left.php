@@ -33,14 +33,40 @@ class ControllerCommonColumnLeft extends Controller {
 				'children' => array()
 			);
 
-			// PC Configurator
+			// Gcomp.ge
+			$gcomp = array();
+
 			if ($this->user->hasPermission('access', 'extension/module/configurator')) {
-				$data['menus'][] = array(
-					'id'       => 'menu-configurator',
-					'icon'	   => 'fa-cogs',
+				$gcomp[] = array(
 					'name'	   => 'კონფიგურატორი',
 					'href'     => $this->url->link('extension/module/configurator', 'user_token=' . $this->session->data['user_token'], true),
 					'children' => array()
+				);
+			}
+
+			if ($this->user->hasPermission('access', 'extension/module/gcomp_social')) {
+				$gcomp[] = array(
+					'name'	   => 'სოციალური ქსელები',
+					'href'     => $this->url->link('extension/module/gcomp_social', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => array()
+				);
+			}
+
+			if ($this->user->hasPermission('access', 'extension/shipping/gcomp_region')) {
+				$gcomp[] = array(
+					'name'	   => 'რეგიონული მიწოდება',
+					'href'     => $this->url->link('extension/shipping/gcomp_region', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => array()
+				);
+			}
+
+			if ($gcomp) {
+				$data['menus'][] = array(
+					'id'       => 'menu-gcomp',
+					'icon'	   => 'fa-rocket',
+					'name'	   => 'Gcomp.ge',
+					'href'     => '',
+					'children' => $gcomp
 				);
 			}
 

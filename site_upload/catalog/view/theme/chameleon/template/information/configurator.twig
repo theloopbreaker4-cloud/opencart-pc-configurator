@@ -83,15 +83,20 @@
                     <button class="btn btn-cfg-action btn-clear" onclick="Configurator.clearAll()">
                         <i class="fa fa-refresh"></i> {{ text_clear }}
                     </button>
+                    {% if cfg_show_pdf %}
                     <button class="btn btn-cfg-action btn-download" onclick="Configurator.downloadPdf()">
-                        <i class="fa fa-file-pdf-o"></i> {{ text_download_pdf }}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13v-1h6v1"/><path d="M11 18h2"/><path d="M12 12v6"/></svg>{{ text_download_pdf }}
                     </button>
-                    {% if cfg_show_save %}
+                    {% endif %}
+                    {% if cfg_show_excel %}
+                    <button class="btn btn-cfg-action btn-download-excel" onclick="Configurator.downloadExcel()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="21"/><line x1="16" y1="13" x2="8" y2="21"/></svg>{{ text_download_excel }}
+                    </button>
+                    {% endif %}
+                    {% if cfg_show_saveload %}
                     <button class="btn btn-cfg-action btn-save" onclick="Configurator.saveConfig()">
                         <i class="fa fa-bookmark-o"></i> {{ text_save }}
                     </button>
-                    {% endif %}
-                    {% if cfg_show_load %}
                     <button class="btn btn-cfg-action btn-load" onclick="Configurator.openLoadForm()">
                         <i class="fa fa-folder-open-o"></i> {{ text_load }}
                     </button>
@@ -205,6 +210,7 @@ var CfgConfig = {
     apiGetComponents: '{{ api_get_components }}',
     apiCheckCompatibility: '{{ api_check_compatibility }}',
     apiDownloadPdf: '{{ api_download_pdf }}',
+    apiDownloadExcel: '{{ api_download_excel }}',
     apiSubmitOrder: '{{ api_submit_order }}',
     apiSaveConfig: '{{ api_save_config }}',
     apiLoadConfig: '{{ api_load_config }}',
@@ -247,8 +253,9 @@ var CfgConfig = {
         cartPartial: '{{ text_js_cart_partial|default("Some items could not be added") }}'
     },
     settings: {
-        showSave:   {{ cfg_show_save|default(0) }},
-        showLoad:   {{ cfg_show_load|default(0) }},
+        showSaveLoad: {{ cfg_show_saveload|default(0) }},
+        showPdf:      {{ cfg_show_pdf|default(1) }},
+        showExcel:    {{ cfg_show_excel|default(1) }},
         qtyRam:     {{ cfg_qty_ram|default(4) }},
         qtySsd:     {{ cfg_qty_ssd|default(4) }},
         qtyHdd:     {{ cfg_qty_hdd|default(4) }},

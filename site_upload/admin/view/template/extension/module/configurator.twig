@@ -256,10 +256,13 @@
                             <h4>{{ text_settings_buttons }}</h4>
                             <div class="form-group">
                                 <div class="checkbox">
-                                    <label><input type="checkbox" name="cfg_show_save" value="1" {% if cfg_show_save %}checked{% endif %}> {{ text_cfg_show_save }}</label>
+                                    <label><input type="checkbox" name="cfg_show_saveload" value="1" {% if cfg_show_saveload %}checked{% endif %}> {{ text_cfg_show_saveload }}</label>
                                 </div>
                                 <div class="checkbox">
-                                    <label><input type="checkbox" name="cfg_show_load" value="1" {% if cfg_show_load %}checked{% endif %}> {{ text_cfg_show_load }}</label>
+                                    <label><input type="checkbox" name="cfg_show_pdf" value="1" {% if cfg_show_pdf %}checked{% endif %}> {{ text_cfg_show_pdf }}</label>
+                                </div>
+                                <div class="checkbox">
+                                    <label><input type="checkbox" name="cfg_show_excel" value="1" {% if cfg_show_excel %}checked{% endif %}> {{ text_cfg_show_excel }}</label>
                                 </div>
                             </div>
                             <hr>

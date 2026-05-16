@@ -9,6 +9,7 @@ $_['text_periphery']             = 'Peripherals';
 $_['text_total_price']           = 'Total Price';
 $_['text_clear']                 = 'Clear';
 $_['text_download_pdf']          = 'Download PDF';
+$_['text_download_excel']        = 'Download Excel';
 $_['text_order']                 = 'Order';
 $_['text_request_discount']      = 'Request Discount';
 $_['text_add']                   = 'Add';

@@ -9,6 +9,7 @@ $_['text_periphery']             = 'Периферия';
 $_['text_total_price']           = 'Общая стоимость';
 $_['text_clear']                 = 'Очистить';
 $_['text_download_pdf']          = 'Скачать PDF';
+$_['text_download_excel']        = 'Скачать Excel';
 $_['text_order']                 = 'Заказать';
 $_['text_request_discount']      = 'Запросить скидку';
 $_['text_add']                   = 'Добавить';

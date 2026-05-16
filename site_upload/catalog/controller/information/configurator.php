@@ -35,7 +35,7 @@ class ControllerInformationConfigurator extends Controller {
         // All text keys
         $text_keys = array(
             'text_system_unit', 'text_periphery', 'text_total_price',
-            'text_clear', 'text_download_pdf', 'text_order', 'text_request_discount',
+            'text_clear', 'text_download_pdf', 'text_download_excel', 'text_order', 'text_request_discount',
             'text_add', 'text_change', 'text_remove', 'text_select_component',
             'text_compatibility_ok', 'text_compatibility_error', 'text_no_components',
             'text_order_title', 'text_name', 'text_phone', 'text_email',
@@ -94,8 +94,16 @@ class ControllerInformationConfigurator extends Controller {
         // Settings
         $this->load->model('setting/setting');
         $cfg_settings = $this->model_setting_setting->getSetting('cfg');
-        $data['cfg_show_save']   = isset($cfg_settings['cfg_show_save'])   ? (int)$cfg_settings['cfg_show_save']   : 0;
-        $data['cfg_show_load']   = isset($cfg_settings['cfg_show_load'])   ? (int)$cfg_settings['cfg_show_load']   : 0;
+        // Save/Load merged. Old keys (cfg_show_save / cfg_show_load) are read for backward compat.
+        if (isset($cfg_settings['cfg_show_saveload'])) {
+            $data['cfg_show_saveload'] = (int)$cfg_settings['cfg_show_saveload'];
+        } else {
+            $old_save = isset($cfg_settings['cfg_show_save']) ? (int)$cfg_settings['cfg_show_save'] : 0;
+            $old_load = isset($cfg_settings['cfg_show_load']) ? (int)$cfg_settings['cfg_show_load'] : 0;
+            $data['cfg_show_saveload'] = ($old_save || $old_load) ? 1 : 0;
+        }
+        $data['cfg_show_pdf']    = isset($cfg_settings['cfg_show_pdf'])    ? (int)$cfg_settings['cfg_show_pdf']    : 1;
+        $data['cfg_show_excel']  = isset($cfg_settings['cfg_show_excel'])  ? (int)$cfg_settings['cfg_show_excel']  : 1;
         $data['cfg_qty_ram']     = isset($cfg_settings['cfg_qty_ram'])     ? (int)$cfg_settings['cfg_qty_ram']     : 4;
         $data['cfg_qty_ssd']     = isset($cfg_settings['cfg_qty_ssd'])     ? (int)$cfg_settings['cfg_qty_ssd']     : 4;
         $data['cfg_qty_hdd']     = isset($cfg_settings['cfg_qty_hdd'])     ? (int)$cfg_settings['cfg_qty_hdd']     : 4;
@@ -105,7 +113,8 @@ class ControllerInformationConfigurator extends Controller {
         // API URLs
         $data['api_get_components'] = $this->url->link('information/configurator/getComponents');
         $data['api_check_compatibility'] = $this->url->link('information/configurator/checkCompatibility');
-        $data['api_download_pdf'] = $this->url->link('information/configurator/downloadPdf');
+        $data['api_download_pdf']   = $this->url->link('information/configurator/downloadPdf');
+        $data['api_download_excel'] = $this->url->link('information/configurator/downloadExcel');
         $data['api_submit_order'] = $this->url->link('information/configurator/submitOrder');
         $data['api_save_config'] = $this->url->link('information/configurator/saveConfig');
         $data['api_load_config'] = $this->url->link('information/configurator/loadConfig');
@@ -368,6 +377,15 @@ class ControllerInformationConfigurator extends Controller {
         $this->load->language('information/configurator');
         $this->load->model('catalog/configurator');
 
+        // Admin toggle: PDF disabled in settings -> redirect to configurator.
+        $this->load->model('setting/setting');
+        $cfg_settings = $this->model_setting_setting->getSetting('cfg');
+        $pdf_enabled = isset($cfg_settings['cfg_show_pdf']) ? (int)$cfg_settings['cfg_show_pdf'] : 1;
+        if (!$pdf_enabled) {
+            $this->response->redirect($this->url->link('information/configurator'));
+            return;
+        }
+
         // Accept GET base64 param or POST
         if (isset($this->request->get['cfg'])) {
             $selected = json_decode(base64_decode($this->request->get['cfg']), true);
@@ -483,6 +501,180 @@ tr:nth-child(even){background:#f9f9f9}
 <div class="footer"><p>' . $this->language->get('text_pdf_footer') . '</p></div>
 </body></html>';
         return $html;
+    }
+
+    public function downloadExcel() {
+        $this->load->language('information/configurator');
+        $this->load->model('catalog/configurator');
+
+        // Admin toggle: Excel disabled in settings -> redirect.
+        $this->load->model('setting/setting');
+        $cfg_settings = $this->model_setting_setting->getSetting('cfg');
+        $excel_enabled = isset($cfg_settings['cfg_show_excel']) ? (int)$cfg_settings['cfg_show_excel'] : 1;
+        if (!$excel_enabled) {
+            $this->response->redirect($this->url->link('information/configurator'));
+            return;
+        }
+
+        // Accept GET base64 param or POST (same as downloadPdf).
+        if (isset($this->request->get['cfg'])) {
+            $selected = json_decode(base64_decode($this->request->get['cfg']), true);
+        } elseif (isset($this->request->get['data'])) {
+            $selected = json_decode($this->request->get['data'], true);
+        } elseif (isset($this->request->post['components'])) {
+            $selected = json_decode($this->request->post['components'], true);
+        } else {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $selected = isset($input['components']) ? $input['components'] : array();
+        }
+
+        if (empty($selected) || !is_array($selected)) {
+            $this->response->redirect($this->url->link('information/configurator'));
+            return;
+        }
+
+        $lang_code = isset($this->session->data['language']) ? $this->session->data['language'] : $this->config->get('config_language');
+        if (strpos($lang_code, 'ka') !== false || strpos($lang_code, 'ge') !== false) {
+            $name_field = 'name_ka';
+        } elseif (strpos($lang_code, 'ru') !== false) {
+            $name_field = 'name_ru';
+        } else {
+            $name_field = 'name';
+        }
+
+        $components = array();
+        $total = 0;
+
+        foreach ($selected as $cat_id => $comp_data) {
+            if (is_array($comp_data)) {
+                $comp_id = isset($comp_data['id']) ? (int)$comp_data['id'] : 0;
+                $qty     = isset($comp_data['qty']) ? max(1, (int)$comp_data['qty']) : 1;
+            } else {
+                $comp_id = (int)$comp_data;
+                $qty     = 1;
+            }
+
+            $component = $this->model_catalog_configurator->getComponent($comp_id);
+            $category  = $this->model_catalog_configurator->getCategory((int)$cat_id);
+
+            if ($component && $category) {
+                $cat_display = !empty($category[$name_field]) ? $category[$name_field] : $category['name'];
+                $components[] = array(
+                    'category' => $cat_display,
+                    'name'     => $component['name'],
+                    'price'    => (float)$component['price'],
+                    'qty'      => $qty
+                );
+                $total += (float)$component['price'] * $qty;
+            }
+        }
+
+        // Build HTML-as-Excel (.xls). Inline attributes (bgcolor/align/font) instead of CSS,
+        // because LibreOffice/older Excel ignore <style>. UTF-8 throughout for Georgian.
+        $filename = 'gcomp-config-' . date('Ymd-His') . '.xls';
+
+        // Lang strings already contain HTML entities (&nbsp;, &quot;) baked in for browser-PDF.
+        // For Excel we must DECODE them first, otherwise LibreOffice shows raw "&nbsp;".
+        $clean = function ($s) {
+            $s = html_entity_decode($s, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            // Strip remaining HTML tags (some lang strings have <br> etc).
+            $s = strip_tags($s);
+            return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
+        };
+
+        $cat_label   = $clean($this->language->get('text_pdf_category'));
+        $comp_label  = $clean($this->language->get('text_pdf_component'));
+        $qty_label   = $clean($this->language->get('text_pdf_qty'));
+        $price_label = $clean($this->language->get('text_pdf_price'));
+        $sub_label   = $clean($this->language->get('text_pdf_subtotal'));
+        $total_label = $clean($this->language->get('text_pdf_total'));
+        $title_label = $clean($this->language->get('text_pdf_title'));
+        $date_label  = $clean($this->language->get('text_pdf_date'));
+
+        $req_title = $clean($this->language->get('text_pdf_requisites_title'));
+        $req_1     = $clean($this->language->get('text_pdf_requisites_1'));
+        $req_2     = $clean($this->language->get('text_pdf_requisites_2'));
+        $req_3     = $clean($this->language->get('text_pdf_requisites_3'));
+        $req_4     = $clean($this->language->get('text_pdf_requisites_4'));
+        $foot_text = $clean($this->language->get('text_pdf_footer'));
+
+        $html  = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">';
+        $html .= '<head><meta http-equiv="Content-Type" content="application/vnd.ms-excel; charset=UTF-8"></head>';
+        $html .= '<body>';
+
+        // Single big table — guarantees consistent column widths in Excel/LibreOffice.
+        // Widths in pixels: # 40, category 180, component 280, qty 60, price 100, subtotal 100 = 760 total.
+        $html .= '<table cellspacing="0" cellpadding="6" border="0">';
+        $html .= '<colgroup>'
+              . '<col width="40">'
+              . '<col width="180">'
+              . '<col width="280">'
+              . '<col width="60">'
+              . '<col width="100">'
+              . '<col width="100">'
+              . '</colgroup>';
+
+        // Title block — colspan over all 6 columns.
+        $html .= '<tr><td colspan="6" align="center" height="30"><font face="Arial" size="6" color="#e74c3c"><b>GCOMP.GE</b></font></td></tr>';
+        $html .= '<tr><td colspan="6" align="center"><font face="Arial" size="3" color="#666666">' . $title_label . '</font></td></tr>';
+        $html .= '<tr><td colspan="6"><font face="Arial" size="2" color="#888888">' . $date_label . ': ' . date('d/m/Y H:i') . '</font></td></tr>';
+        $html .= '<tr><td colspan="6" height="10"></td></tr>';
+
+        // Header row.
+        $html .= '<tr bgcolor="#e74c3c">'
+              . '<td align="center" style="border:1px solid #c0392b"><font color="#ffffff" face="Arial"><b>#</b></font></td>'
+              . '<td style="border:1px solid #c0392b"><font color="#ffffff" face="Arial"><b>' . $cat_label . '</b></font></td>'
+              . '<td style="border:1px solid #c0392b"><font color="#ffffff" face="Arial"><b>' . $comp_label . '</b></font></td>'
+              . '<td align="center" style="border:1px solid #c0392b"><font color="#ffffff" face="Arial"><b>' . $qty_label . '</b></font></td>'
+              . '<td align="right" style="border:1px solid #c0392b"><font color="#ffffff" face="Arial"><b>' . $price_label . '</b></font></td>'
+              . '<td align="right" style="border:1px solid #c0392b"><font color="#ffffff" face="Arial"><b>' . $sub_label . '</b></font></td>'
+              . '</tr>';
+
+        $i = 1;
+        foreach ($components as $comp) {
+            $qty      = isset($comp['qty']) ? (int)$comp['qty'] : 1;
+            $subtotal = $comp['price'] * $qty;
+            $bg = ($i % 2 === 0) ? ' bgcolor="#f9f9f9"' : ' bgcolor="#ffffff"';
+            $cellStyle = 'style="border:1px solid #cccccc"';
+            $html .= '<tr' . $bg . '>'
+                  . '<td align="center" ' . $cellStyle . '><font face="Arial">' . $i++ . '</font></td>'
+                  . '<td ' . $cellStyle . '><font face="Arial">' . htmlspecialchars($comp['category'], ENT_QUOTES, 'UTF-8') . '</font></td>'
+                  . '<td ' . $cellStyle . '><font face="Arial">' . htmlspecialchars($comp['name'],     ENT_QUOTES, 'UTF-8') . '</font></td>'
+                  . '<td align="center" ' . $cellStyle . '><font face="Arial">' . $qty . '</font></td>'
+                  . '<td align="right" ' . $cellStyle . ' x:num="' . $comp['price'] . '"><font face="Arial">' . number_format($comp['price'], 2, '.', '') . '</font></td>'
+                  . '<td align="right" ' . $cellStyle . ' x:num="' . $subtotal . '"><font face="Arial">' . number_format($subtotal, 2, '.', '') . '</font></td>'
+                  . '</tr>';
+        }
+
+        // Total row.
+        $html .= '<tr bgcolor="#fdecea">'
+              . '<td colspan="5" align="right" style="border:1px solid #cccccc"><font face="Arial" color="#e74c3c" size="3"><b>' . $total_label . '</b></font></td>'
+              . '<td align="right" style="border:1px solid #cccccc" x:num="' . $total . '"><font face="Arial" color="#e74c3c" size="3"><b>' . number_format($total, 2, '.', '') . '</b></font></td>'
+              . '</tr>';
+
+        // Spacer + requisites (within same table, colspan=6).
+        $html .= '<tr><td colspan="6" height="15"></td></tr>';
+        if ($req_title !== '' || $req_1 !== '') {
+            $html .= '<tr><td colspan="6">';
+            if ($req_title !== '') $html .= '<font face="Arial" size="2" color="#333333"><b>' . $req_title . '</b></font><br>';
+            if ($req_1 !== '')     $html .= '<font face="Arial" size="2" color="#555555">' . $req_1 . '</font><br>';
+            if ($req_2 !== '')     $html .= '<font face="Arial" size="2" color="#555555">' . $req_2 . '</font><br>';
+            if ($req_3 !== '')     $html .= '<br><font face="Arial" size="2" color="#555555">' . $req_3 . '</font><br>';
+            if ($req_4 !== '')     $html .= '<font face="Arial" size="2" color="#555555">' . $req_4 . '</font>';
+            $html .= '</td></tr>';
+        }
+        if ($foot_text !== '') {
+            $html .= '<tr><td colspan="6" align="center"><font face="Arial" size="2" color="#999999">' . $foot_text . '</font></td></tr>';
+        }
+        $html .= '</table>';
+
+        $html .= '</body></html>';
+
+        $this->response->addHeader('Content-Type: application/vnd.ms-excel; charset=utf-8');
+        $this->response->addHeader('Content-Disposition: attachment; filename="' . $filename . '"');
+        $this->response->addHeader('Cache-Control: no-store, no-cache, must-revalidate');
+        $this->response->addHeader('Pragma: no-cache');
+        $this->response->setOutput($html);
     }
 
     public function submitOrder() {

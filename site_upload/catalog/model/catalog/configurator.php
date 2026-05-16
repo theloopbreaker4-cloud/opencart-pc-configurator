@@ -1,16 +1,4 @@
 <?php
-/**
- * PC Configurator — Frontend Model
- *
- * Database queries for frontend: categories, components (catalog + manual),
- * attributes, configurations, orders, cart operations.
- *
- * @package  PC Configurator for OpenCart
- * @version  1.4.0
- * @author   gcomp.ge
- * @license  MIT
- * @link     https://github.com/YOUR_USERNAME/oc-pc-configurator
- */
 class ModelCatalogConfigurator extends Model {
 
     // Mapping: configurator category_id => OpenCart category_id(s)
@@ -33,16 +21,18 @@ class ModelCatalogConfigurator extends Model {
         16 => array(286),       // Mousepad
         17 => array(289),       // Microphone
         18 => array(276),       // Water Cooler (filter by name)
+        99 => array(),          // Other - см. ниже: специальная логика "товары не из других категорий"
     );
 
     // Name filters for categories sharing same OC category
     private $name_filters = array(
-        3  => array('include' => array(), 'exclude' => array('SODIMM', 'sodimm', 'SO-DIMM', 'so-dimm', 'Laptop', 'laptop', 'ნოუთბ')),
-        6  => array('include' => array('პროცესორის ქულერ', 'CPU Cooler', 'cpu cooler', 'Gamma', 'GAMMAXX', 'AK400', 'AK620', 'NH-D', 'NH-U', 'Hyper 212'), 'exclude' => array('წყლ', 'Liquid', 'liquid', 'AIO', 'ქეის', 'Case Fan', 'XFAN', 'ვიდეო')),
-        8  => array('include' => array('SSD', 'ssd', 'NVMe', 'nvme', 'M.2', 'm.2'), 'exclude' => array('HDD', 'ყუთ', 'Enclosure', 'გარე')),
-        9  => array('include' => array('HDD', 'hdd', 'Barracuda', 'მყარი დისკი'), 'exclude' => array('SSD', 'ssd', 'NVMe', 'nvme', 'M.2', 'ყუთ', 'Enclosure', 'გარე')),
-        10 => array('include' => array('ქეის ქულერ', 'Case Fan', 'case fan', 'XFAN', 'FC120'), 'exclude' => array()),
-        18 => array('include' => array('წყლ', 'Liquid', 'liquid', 'AIO', 'CORELIQUID'), 'exclude' => array()),
+        6  => array('include' => array('პროცესორის ქულერ', 'CPU Cooler', 'cpu cooler', 'процессорный кулер', 'кулер для процессора', 'Gamma', 'GAMMAXX', 'AK400', 'AK620', 'NH-D', 'NH-U', 'Hyper 212'), 'exclude' => array('წყლ', 'Liquid', 'liquid', 'водян', 'жидкост', 'AIO', 'ქეის', 'Case Fan', 'корпус', 'XFAN', 'ვიდეო')),
+        // Cat 8 = "SSD M.2": только M.2 / NVMe
+        8  => array('include' => array('M.2', 'm.2', 'NVMe', 'nvme', 'NVME'), 'exclude' => array('ყუთ', 'Enclosure', 'გარე', 'внешн')),
+        // Cat 9 = "HDD/SSD": все HDD + SATA SSD (т.е. любые накопители, но НЕ M.2/NVMe)
+        9  => array('include' => array('HDD', 'hdd', 'SSD', 'ssd', 'Barracuda', 'მყარი დისკი', 'жёсткий диск', 'жесткий диск'), 'exclude' => array('M.2', 'm.2', 'NVMe', 'nvme', 'NVME', 'ყუთ', 'Enclosure', 'გარე', 'внешн')),
+        10 => array('include' => array('ქეის ქულერ', 'Case Fan', 'case fan', 'корпусной', 'корпусный', 'кулер корпус', 'XFAN', 'FC120'), 'exclude' => array()),
+        18 => array('include' => array('წყლ', 'Liquid', 'liquid', 'водян', 'жидкост', 'AIO', 'CORELIQUID'), 'exclude' => array()),
     );
 
     public function getCategories() {
@@ -68,6 +58,12 @@ class ModelCatalogConfigurator extends Model {
     }
 
     private function getProductsFromCatalog($category_id) {
+        // Спец-раздел "სხვა / Другое / Other": товары, чьи OC-категории не входят
+        // ни в одну из уже замапленных категорий конфигуратора.
+        if ($category_id == 99) {
+            return $this->getOtherProducts();
+        }
+
         if (!isset($this->category_map[$category_id])) {
             return array();
         }
@@ -81,10 +77,11 @@ class ModelCatalogConfigurator extends Model {
         $language_id = (int)$this->config->get('config_language_id');
         $cat_ids = implode(',', array_map('intval', $oc_categories));
 
+        // Display name in current language; fallback to any non-empty name if missing
         $query = $this->db->query("
             SELECT DISTINCT p.product_id as component_id,
                    '" . (int)$category_id . "' as category_id,
-                   pd.name,
+                   COALESCE(NULLIF(pd_cur.name,''), pd_fb.name) as name,
                    COALESCE(ps.price, p.price) as price,
                    IF(ps.price IS NOT NULL AND ps.price < p.price, p.price, NULL) as original_price,
                    p.image,
@@ -92,7 +89,10 @@ class ModelCatalogConfigurator extends Model {
                    p.status,
                    p.sort_order
             FROM `" . DB_PREFIX . "product` p
-            JOIN `" . DB_PREFIX . "product_description` pd ON p.product_id = pd.product_id AND pd.language_id = '" . $language_id . "'
+            LEFT JOIN `" . DB_PREFIX . "product_description` pd_cur
+                ON p.product_id = pd_cur.product_id AND pd_cur.language_id = '" . $language_id . "'
+            JOIN `" . DB_PREFIX . "product_description` pd_fb
+                ON p.product_id = pd_fb.product_id
             JOIN `" . DB_PREFIX . "product_to_category` p2c ON p.product_id = p2c.product_id
             LEFT JOIN (
                 SELECT product_id, MIN(price) as price
@@ -104,42 +104,102 @@ class ModelCatalogConfigurator extends Model {
             WHERE p2c.category_id IN (" . $cat_ids . ")
             AND p.status = 1
             AND p.quantity > 0
-            ORDER BY p.sort_order ASC, pd.name ASC
+            GROUP BY p.product_id
+            ORDER BY p.sort_order ASC, name ASC
         ");
 
-        // Apply name filters if defined
+        // Apply name filters if defined. Filter against ALL language names of the product
+        // (because Georgian original may match the filter while RU translation doesn't).
         if (isset($this->name_filters[$category_id])) {
             $filter = $this->name_filters[$category_id];
+
+            // Pre-fetch all names for products in this batch
+            $ids = array();
+            foreach ($query->rows as $row) { $ids[] = (int)$row['component_id']; }
+            $names_by_pid = array();
+            if (!empty($ids)) {
+                $name_q = $this->db->query("SELECT product_id, name FROM `" . DB_PREFIX . "product_description` WHERE product_id IN (" . implode(',', $ids) . ")");
+                foreach ($name_q->rows as $nr) {
+                    $names_by_pid[(int)$nr['product_id']][] = $nr['name'];
+                }
+            }
+
             $filtered = array();
             foreach ($query->rows as $row) {
-                $name = $row['name'];
-                $match = empty($filter['include']); // if no include patterns, match all
+                $pid = (int)$row['component_id'];
+                $names = isset($names_by_pid[$pid]) ? $names_by_pid[$pid] : array($row['name']);
 
-                // Check include patterns
+                $match = false;
                 foreach ($filter['include'] as $pattern) {
-                    if (stripos($name, $pattern) !== false) {
-                        $match = true;
-                        break;
+                    foreach ($names as $n) {
+                        if (stripos($n, $pattern) !== false) { $match = true; break 2; }
                     }
                 }
-
                 if (!$match) continue;
 
-                // Check exclude patterns
                 $excluded = false;
                 foreach ($filter['exclude'] as $pattern) {
-                    if (stripos($name, $pattern) !== false) {
-                        $excluded = true;
-                        break;
+                    foreach ($names as $n) {
+                        if (stripos($n, $pattern) !== false) { $excluded = true; break 2; }
                     }
                 }
-
-                if (!$excluded) {
-                    $filtered[] = $row;
-                }
+                if (!$excluded) $filtered[] = $row;
             }
             return $filtered;
         }
+
+        return $query->rows;
+    }
+
+    // "Other" pseudo-category: products whose OC categories are NOT in any other
+    // configurator-mapped category. Allows the customer to pick anything from the
+    // shop that doesn't fit the predefined component types.
+    private function getOtherProducts() {
+        $mapped = array();
+        foreach ($this->category_map as $cfg_id => $ocs) {
+            if ($cfg_id == 99) continue;
+            foreach ($ocs as $oc) { $mapped[(int)$oc] = true; }
+        }
+        if (empty($mapped)) return array();
+
+        $excluded_ids = implode(',', array_keys($mapped));
+        $language_id = (int)$this->config->get('config_language_id');
+
+        // Take products that are in SOME OC category but none of the mapped ones.
+        // Limit to 200 to keep payload reasonable.
+        $query = $this->db->query("
+            SELECT DISTINCT p.product_id as component_id,
+                   '99' as category_id,
+                   COALESCE(NULLIF(pd_cur.name,''), pd_fb.name) as name,
+                   COALESCE(ps.price, p.price) as price,
+                   IF(ps.price IS NOT NULL AND ps.price < p.price, p.price, NULL) as original_price,
+                   p.image,
+                   NULL as specs,
+                   p.status,
+                   p.sort_order
+            FROM `" . DB_PREFIX . "product` p
+            LEFT JOIN `" . DB_PREFIX . "product_description` pd_cur
+                ON p.product_id = pd_cur.product_id AND pd_cur.language_id = '" . $language_id . "'
+            JOIN `" . DB_PREFIX . "product_description` pd_fb
+                ON p.product_id = pd_fb.product_id
+            JOIN `" . DB_PREFIX . "product_to_category` p2c ON p.product_id = p2c.product_id
+            LEFT JOIN (
+                SELECT product_id, MIN(price) as price
+                FROM `" . DB_PREFIX . "product_special`
+                WHERE (date_start = '0000-00-00' OR date_start <= NOW())
+                AND (date_end = '0000-00-00' OR date_end >= NOW())
+                GROUP BY product_id
+            ) ps ON p.product_id = ps.product_id
+            WHERE p.status = 1
+              AND p.quantity > 0
+              AND p.product_id NOT IN (
+                  SELECT DISTINCT product_id FROM `" . DB_PREFIX . "product_to_category`
+                  WHERE category_id IN (" . $excluded_ids . ")
+              )
+            GROUP BY p.product_id
+            ORDER BY p.sort_order ASC, name ASC
+            LIMIT 200
+        ");
 
         return $query->rows;
     }
@@ -175,26 +235,8 @@ class ModelCatalogConfigurator extends Model {
     }
 
     public function getComponentAttributes($component_id) {
-        $rows = array();
-
-        // Try custom pc_component_attribute table
         $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "pc_component_attribute` WHERE component_id = '" . (int)$component_id . "'");
-        $rows = $query->rows;
-
-        // Read from standard OpenCart oc_product_attribute (component_id = product_id)
-        // Use any language_id since attribute names (sockets) are the same in all languages
-        $attrs = $this->db->query("
-            SELECT ad.name AS attribute_name, pa.text AS attribute_value
-            FROM `" . DB_PREFIX . "product_attribute` pa
-            LEFT JOIN `" . DB_PREFIX . "attribute_description` ad ON pa.attribute_id = ad.attribute_id
-            WHERE pa.product_id = '" . (int)$component_id . "'
-            GROUP BY pa.attribute_id
-        ");
-        foreach ($attrs->rows as $attr) {
-            $rows[] = array('attribute_name' => $attr['attribute_name'], 'attribute_value' => $attr['attribute_value']);
-        }
-
-        return $rows;
+        return $query->rows;
     }
 
     public function getConfiguration($config_id) {
@@ -214,7 +256,7 @@ class ModelCatalogConfigurator extends Model {
             WHERE r.compatible = 0 AND r.component_id_1 IN (" . $ids . ") AND r.component_id_2 IN (" . $ids . ")");
 
         foreach ($query->rows as $rule) {
-            $errors[] = array('name1' => $rule['comp1_name'], 'name2' => $rule['comp2_name']);
+            $errors[] = $rule['comp1_name'] . ' არ არის თავსებადი ' . $rule['comp2_name'] . '-თან';
         }
         return $errors;
     }

@@ -176,3 +176,31 @@ SET @sql_attr_desc = IF(@sockets_exists = 0,
 PREPARE stmt_attr_desc FROM @sql_attr_desc;
 EXECUTE stmt_attr_desc;
 DEALLOCATE PREPARE stmt_attr_desc;
+
+-- =============================================
+-- Patch 6: Rename storage categories + add "Other" section (2026-05-13)
+-- Cat 8: "SSD" -> "SSD M.2" (only M.2/NVMe; SATA SSD moved to HDD section)
+-- Cat 9: "HDD" -> "HDD/SSD" (HDD + SATA SSD)
+-- Cat 99: new "Other" section — products not in any other configurator category
+-- =============================================
+UPDATE `oc_pc_component_category` SET
+    name    = 'SSD M.2',
+    name_ka = 'SSD M.2',
+    name_ru = 'SSD M.2'
+WHERE category_id = 8;
+
+UPDATE `oc_pc_component_category` SET
+    name    = 'HDD/SSD',
+    name_ka = 'HDD/SSD',
+    name_ru = 'HDD/SSD'
+WHERE category_id = 9;
+
+INSERT INTO `oc_pc_component_category` (`category_id`, `name`, `name_ka`, `name_ru`, `icon`, `sort_order`, `section`, `required`, `status`)
+VALUES (99, 'Other', 'სხვა', 'Другое', 'fan.svg', 99, 'other', 0, 1)
+ON DUPLICATE KEY UPDATE
+    name    = VALUES(name),
+    name_ka = VALUES(name_ka),
+    name_ru = VALUES(name_ru),
+    icon    = VALUES(icon),
+    section = VALUES(section),
+    sort_order = VALUES(sort_order);

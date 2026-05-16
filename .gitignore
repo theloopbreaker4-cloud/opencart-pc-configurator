@@ -9,3 +9,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Working/backup folders (per-deploy snapshots, not source of truth)
+backup_*/
+edits_*/
